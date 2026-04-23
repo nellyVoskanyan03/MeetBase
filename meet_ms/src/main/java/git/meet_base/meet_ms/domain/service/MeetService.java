@@ -15,7 +15,7 @@ public class MeetService {
         this.meetRepository = meetRepository;
     }
 
-    public Meet initializeMeeting(@Valid Meet meet) {
+    public Meet initializeMeeting(Meet meet) {
         meet.setStatus(MeetStatus.CREATED);
         meet.setActualParticipants(0);
 

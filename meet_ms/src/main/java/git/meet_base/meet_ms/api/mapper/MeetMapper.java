@@ -3,7 +3,6 @@ package git.meet_base.meet_ms.api.mapper;
 import git.meet_base.meet_ms.api.dto.CreateMeetRequest;
 import git.meet_base.meet_ms.api.dto.CreateMeetResponse;
 import git.meet_base.meet_ms.domain.model.Meet;
-import git.meet_base.meet_ms.domain.model.MeetStatus;
 
 public class MeetMapper {
 
@@ -19,9 +18,6 @@ public class MeetMapper {
         meet.setDateTime(dto.getDateTime());
         meet.setPlace(dto.getPlace());
         meet.setMinStudentCount(dto.getMinStudentCount());
-
-        meet.setActualParticipants(0);
-        meet.setStatus(MeetStatus.CREATED);
 
         return meet;
     }
