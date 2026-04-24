@@ -136,4 +136,19 @@ public class MeetController {
 
         return ResponseEntity.ok(response);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<CancelMeetResponse> cancelMeeting(@PathVariable("id") UUID meetId) {
+
+        MeetResponse cancelledMeet =
+                MeetMapper.toDto(meetService.cancelMeeting(meetId));
+
+        CancelMeetResponse response = new CancelMeetResponse(
+                "Meeting successfully cancelled.",
+                cancelledMeet.getMeetId(),
+                cancelledMeet.getStatus()
+        );
+
+        return ResponseEntity.ok(response);
+    }
 }

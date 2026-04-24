@@ -171,4 +171,24 @@ public class MeetService {
 
         return meetDomainRepository.save(meet);
     }
+
+    public Meet cancelMeeting(UUID meetId) {
+        Meet meet = meetDomainRepository.findById(meetId)
+                .orElseThrow(() -> new ResourceNotFoundException("Meeting not found with ID: " + meetId));
+
+        MeetStatus previousStatus = meet.getStatus();
+
+        meet.setStatus(MeetStatus.CANCELLED);
+
+        if (previousStatus == MeetStatus.APPROVED) {
+
+            // TODO: Call Google Calendar API to delete the event from everyone's calendars
+
+            // TODO: Publish "MeetingCancelledEvent" to Kafka Alert the Lecturer, Company, and Students that the event is off.
+        } else if (previousStatus == MeetStatus.PENDING) {
+            // TODO: Publish "MeetingCancelledEvent" to Kafka Alert the Lecturer, Company, and Students that the event is off.
+        }
+
+        return meetDomainRepository.save(meet);
+    }
 }
