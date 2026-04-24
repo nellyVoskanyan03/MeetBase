@@ -86,4 +86,20 @@ public class MeetController {
 
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/{id}/approve")
+    public ResponseEntity<ApproveMeetResponse> approveMeeting(@PathVariable("id") UUID meetId) {
+
+        MeetResponse approvedMeet = MeetMapper.toDto(meetService.approveMeeting(meetId));
+
+        ApproveMeetResponse response = new ApproveMeetResponse(
+                "Meeting formally approved. Calendar event generated.",
+                approvedMeet.getMeetId(),
+                approvedMeet.getStatus(),
+                approvedMeet.getGoogleCalendarEventId(),
+                approvedMeet.getHangoutLink()
+        );
+
+        return ResponseEntity.ok(response);
+    }
 }

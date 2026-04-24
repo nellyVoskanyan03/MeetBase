@@ -73,6 +73,10 @@ public class MeetService {
             throw new UnauthorizedActionException("Unauthorized: Lecturer ID does not match the meeting record.");
         }
 
+        if (meet.getStatus() != MeetStatus.CREATED) {
+            throw new UnauthorizedActionException("Only meetings with status created can be responded to.");
+        }
+
         if (accepted) {
             meet.setStatus(MeetStatus.PENDING);
         } else {
@@ -106,6 +110,34 @@ public class MeetService {
         if (meet.getActualParticipants() >= meet.getMinStudentCount()) {
             // TODO for later: add notification for managers to approve
         }
+
+        return meetDomainRepository.save(meet);
+    }
+
+    public Meet approveMeeting(UUID meetId) {
+        Meet meet = meetDomainRepository.findById(meetId)
+                .orElseThrow(() -> new ResourceNotFoundException("Meeting not found with ID: " + meetId));
+
+        if (meet.getStatus() != MeetStatus.PENDING) {
+            throw new UnauthorizedActionException("Only pending meetings can be approved.");
+        }
+
+        if (meet.getActualParticipants() < meet.getMinStudentCount()) {
+            throw new UnauthorizedActionException(
+                    "Cannot approve: Minimum student count (" + meet.getMinStudentCount() + ") not met yet."
+            );
+        }
+
+        meet.setStatus(MeetStatus.APPROVED);
+
+        //TODO: add GoogleCalendarClient call
+        String generatedEventId = "";
+        String generatedLink = "https://meet.google.com/";
+
+        meet.setGoogleCalendarEventId(generatedEventId);
+        meet.setHangoutLink(generatedLink);
+
+        // TODO: Publish final "Confirmed" event to Kafka
 
         return meetDomainRepository.save(meet);
     }
