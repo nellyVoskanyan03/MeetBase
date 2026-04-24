@@ -3,6 +3,7 @@ package git.meet_base.meet_ms.api.controller;
 import git.meet_base.meet_ms.api.dto.*;
 import git.meet_base.meet_ms.api.mapper.MeetMapper;
 import git.meet_base.meet_ms.domain.model.MeetStatus;
+import git.meet_base.meet_ms.domain.model.UpdateMeetCommand;
 import git.meet_base.meet_ms.domain.model.UserRole;
 import git.meet_base.meet_ms.domain.service.MeetService;
 import jakarta.validation.Valid;
@@ -10,7 +11,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -98,6 +101,37 @@ public class MeetController {
                 approvedMeet.getStatus(),
                 approvedMeet.getGoogleCalendarEventId(),
                 approvedMeet.getHangoutLink()
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<UpdateMeetResponse> updateMeeting(
+            @PathVariable("id") UUID meetId,
+            @RequestBody UpdateMeetRequest request) {
+
+        MeetResponse updatedMeet =
+                MeetMapper.toDto(meetService.updateMeeting(
+                        meetId,
+                        new UpdateMeetCommand(
+                                request.getPlace(),
+                                request.getDateTime()
+                        )));
+
+        Map<String, Object> updatedFields = new HashMap<>();
+        if (request.getPlace() != null) {
+            updatedFields.put("place", updatedMeet.getPlace());
+        }
+        if (request.getDateTime() != null) {
+            updatedFields.put("dateTime", updatedMeet.getDateTime());
+        }
+
+        UpdateMeetResponse response = new UpdateMeetResponse(
+                "Meeting updated successfully.",
+                updatedMeet.getMeetId(),
+                updatedFields,
+                updatedMeet.getStatus()
         );
 
         return ResponseEntity.ok(response);

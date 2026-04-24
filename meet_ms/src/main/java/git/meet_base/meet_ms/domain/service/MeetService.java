@@ -2,10 +2,7 @@ package git.meet_base.meet_ms.domain.service;
 
 import git.meet_base.meet_ms.domain.exception.ResourceNotFoundException;
 import git.meet_base.meet_ms.domain.exception.UnauthorizedActionException;
-import git.meet_base.meet_ms.domain.model.Meet;
-import git.meet_base.meet_ms.domain.model.MeetRegistration;
-import git.meet_base.meet_ms.domain.model.MeetStatus;
-import git.meet_base.meet_ms.domain.model.UserRole;
+import git.meet_base.meet_ms.domain.model.*;
 import git.meet_base.meet_ms.domain.repository.MeetDomainRegistrationRepository;
 import git.meet_base.meet_ms.domain.repository.MeetDomainRepository;
 import org.springframework.stereotype.Service;
@@ -29,6 +26,7 @@ public class MeetService {
     public Meet initializeMeeting(Meet meet) {
         meet.setStatus(MeetStatus.CREATED);
         meet.setActualParticipants(0);
+        // TODO: Publish "MeetCreatedEvent" to Kafka and Notify the assigned Lecturer
 
         return meetDomainRepository.save(meet);
     }
@@ -82,6 +80,8 @@ public class MeetService {
         } else {
             meet.setStatus(MeetStatus.CANCELLED);
         }
+
+        // TODO: Publish "LecturerRespondedEvent" to Kafka and Notify the Company
 
         return meetDomainRepository.save(meet);
     }
@@ -137,7 +137,37 @@ public class MeetService {
         meet.setGoogleCalendarEventId(generatedEventId);
         meet.setHangoutLink(generatedLink);
 
-        // TODO: Publish final "Confirmed" event to Kafka
+        // TODO: Publish final "Confirmed" event to Kafka and Notify the Company, Lecturer, and all Registered Students
+
+        return meetDomainRepository.save(meet);
+    }
+
+    public Meet updateMeeting(UUID meetId, UpdateMeetCommand command) {
+        Meet meet = meetDomainRepository.findById(meetId)
+                .orElseThrow(() -> new ResourceNotFoundException("Meeting not found with ID: " + meetId));
+
+        boolean isUpdated = false;
+
+        if (command.getPlace() != null && !command.getPlace().isBlank()) {
+            meet.setPlace(command.getPlace());
+            isUpdated = true;
+        }
+
+        if (command.getDateTime() != null) {
+            meet.setDateTime(command.getDateTime());
+            isUpdated = true;
+        }
+
+        if (!isUpdated) {
+            return meet;
+        }
+
+        if (meet.getStatus() == MeetStatus.APPROVED) {
+
+            // TODO: Call Google Calendar API to reschedule the event
+
+            // TODO: Publish event to Kafka and Notify all participants (Students, Lecturer, Company) about the time/location change.
+        }
 
         return meetDomainRepository.save(meet);
     }
