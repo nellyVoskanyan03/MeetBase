@@ -1,7 +1,7 @@
 package git.meet_base.meet_ms.api.mapper;
 
 import git.meet_base.meet_ms.api.dto.CreateMeetRequest;
-import git.meet_base.meet_ms.api.dto.CreateMeetResponse;
+import git.meet_base.meet_ms.api.dto.MeetResponse;
 import git.meet_base.meet_ms.domain.model.Meet;
 
 public class MeetMapper {
@@ -22,12 +22,12 @@ public class MeetMapper {
         return meet;
     }
 
-    public static CreateMeetResponse toDto(Meet domain) {
+    public static MeetResponse toDto(Meet domain) {
         if (domain == null) {
             return null;
         }
 
-        CreateMeetResponse dto = new CreateMeetResponse();
+        MeetResponse dto = new MeetResponse();
         dto.setMeetId(domain.getId());
         dto.setCourse(domain.getCourse());
         dto.setCompanyId(domain.getCompanyId());

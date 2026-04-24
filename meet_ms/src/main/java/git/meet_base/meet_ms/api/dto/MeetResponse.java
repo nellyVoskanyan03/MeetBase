@@ -3,7 +3,7 @@ package git.meet_base.meet_ms.api.dto;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-public class CreateMeetResponse {
+public class MeetResponse {
 
     private UUID meetId;
     private String course;
@@ -17,7 +17,7 @@ public class CreateMeetResponse {
     private String googleCalendarEventId;
     private String hangoutLink;
 
-    public CreateMeetResponse() {
+    public MeetResponse() {
 
     }
 

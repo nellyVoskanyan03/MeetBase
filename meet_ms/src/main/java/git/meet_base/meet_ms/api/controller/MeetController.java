@@ -2,15 +2,17 @@ package git.meet_base.meet_ms.api.controller;
 
 import git.meet_base.meet_ms.api.mapper.MeetMapper;
 import git.meet_base.meet_ms.api.dto.CreateMeetRequest;
-import git.meet_base.meet_ms.api.dto.CreateMeetResponse;
+import git.meet_base.meet_ms.api.dto.MeetResponse;
+import git.meet_base.meet_ms.domain.model.MeetStatus;
+import git.meet_base.meet_ms.domain.model.UserRole;
 import git.meet_base.meet_ms.domain.service.MeetService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/meets")
@@ -22,13 +24,31 @@ public class MeetController {
     }
 
     @PostMapping
-    public ResponseEntity<CreateMeetResponse> initializeMeeting(
+    public ResponseEntity<MeetResponse> initializeMeeting(
             @Valid @RequestBody CreateMeetRequest createMeetDto) {
 
-        CreateMeetResponse createdMeet = MeetMapper.toDto(
+        MeetResponse createdMeet = MeetMapper.toDto(
                 meetService.initializeMeeting(
                         MeetMapper.toDomain(createMeetDto)));
 
         return ResponseEntity.status(HttpStatus.CREATED).body(createdMeet);
     }
+
+    @GetMapping
+    public ResponseEntity<List<MeetResponse>> getMeets(
+            @RequestParam() UserRole role,
+            @RequestParam(required = false) MeetStatus status,
+            @RequestParam(required = false) String companyId,
+            @RequestParam() String userId) {
+
+
+        List<MeetResponse> responseList = meetService
+                .getFilteredMeets(role, status, companyId, userId)
+                .stream()
+                .map(MeetMapper::toDto)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(responseList);
+    }
+
 }
