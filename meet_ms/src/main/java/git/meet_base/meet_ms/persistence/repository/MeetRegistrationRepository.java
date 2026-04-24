@@ -10,4 +10,6 @@ public interface MeetRegistrationRepository extends Repository<MeetRegistrationE
     MeetRegistrationEntity save(MeetRegistrationEntity entity);
 
     List<MeetRegistrationEntity> findByStudentId(String studentId);
+
+    boolean existsByMeetIdAndStudentId(UUID meetId, String studentId);
 }

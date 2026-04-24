@@ -10,6 +10,7 @@ import git.meet_base.meet_ms.domain.repository.MeetDomainRegistrationRepository;
 import git.meet_base.meet_ms.domain.repository.MeetDomainRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -51,12 +52,8 @@ public class MeetService {
                         userMeets = meetDomainRepository.findByIdIn(meetIds);
                     }
                 }
-                case LECTURER -> {
-                    userMeets = meetDomainRepository.findByLecturerId(userId);
-                }
-                case MANAGER -> {
-                    userMeets = meetDomainRepository.findAll();
-                }
+                case LECTURER -> userMeets = meetDomainRepository.findByLecturerId(userId);
+                case MANAGER -> userMeets = meetDomainRepository.findAll();
             }
 
         }
@@ -78,6 +75,34 @@ public class MeetService {
             meet.setStatus(MeetStatus.PENDING);
         } else {
             meet.setStatus(MeetStatus.CANCELLED);
+        }
+
+        return meetDomainRepository.save(meet);
+    }
+
+    public Meet registerStudent(UUID meetId, String studentId) {
+        Meet meet = meetDomainRepository.findById(meetId)
+                .orElseThrow(() -> new ResourceNotFoundException("Meeting not found with ID: " + meetId));
+
+        if (meet.getStatus() != MeetStatus.PENDING) {
+            throw new UnauthorizedActionException("This meeting is not currently open for registration.");
+        }
+
+        if (meetDomainRegistrationRepository.existsByMeetIdAndStudentId(meetId, studentId)) {
+            throw new UnauthorizedActionException("Student " + studentId + " is already registered for this meeting.");
+        }
+
+        MeetRegistration registration = new MeetRegistration();
+        registration.setMeetId(meetId);
+        registration.setStudentId(studentId);
+        registration.setRegisteredAt(ZonedDateTime.now());
+
+        meetDomainRegistrationRepository.save(registration);
+
+        meet.setActualParticipants(meet.getActualParticipants() + 1);
+
+        if (meet.getActualParticipants() >= meet.getMinStudentCount()) {
+            // TODO for later: add notification for managers to approve
         }
 
         return meetDomainRepository.save(meet);

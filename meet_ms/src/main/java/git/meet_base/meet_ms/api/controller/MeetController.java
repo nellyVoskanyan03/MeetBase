@@ -1,10 +1,7 @@
 package git.meet_base.meet_ms.api.controller;
 
-import git.meet_base.meet_ms.api.dto.LecturerRespondRequest;
-import git.meet_base.meet_ms.api.dto.LecturerRespondResponse;
+import git.meet_base.meet_ms.api.dto.*;
 import git.meet_base.meet_ms.api.mapper.MeetMapper;
-import git.meet_base.meet_ms.api.dto.CreateMeetRequest;
-import git.meet_base.meet_ms.api.dto.MeetResponse;
 import git.meet_base.meet_ms.domain.model.MeetStatus;
 import git.meet_base.meet_ms.domain.model.UserRole;
 import git.meet_base.meet_ms.domain.service.MeetService;
@@ -72,4 +69,21 @@ public class MeetController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/{id}/register")
+    public ResponseEntity<StudentRegisterResponse> registerForMeet(
+            @PathVariable("id") UUID meetId,
+            @Valid @RequestBody StudentRegisterRequest request) {
+
+        git.meet_base.meet_ms.domain.model.Meet updatedMeet =
+                meetService.registerStudent(meetId, request.getStudentId());
+
+        StudentRegisterResponse response = new StudentRegisterResponse(
+                "Successfully registered for the meeting.",
+                updatedMeet.getId(),
+                updatedMeet.getActualParticipants(),
+                updatedMeet.getStatus().name()
+        );
+
+        return ResponseEntity.ok(response);
+    }
 }

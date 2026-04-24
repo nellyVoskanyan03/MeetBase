@@ -7,6 +7,7 @@ import git.meet_base.meet_ms.persistence.mapper.MeetRegistrationMapper;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Repository
 public class MeetRegistrationRepositoryAdapter implements MeetDomainRegistrationRepository {
@@ -25,5 +26,20 @@ public class MeetRegistrationRepositoryAdapter implements MeetDomainRegistration
                 .stream()
                 .map(MeetRegistrationMapper::toDomain)
                 .toList();
+    }
+
+    @Override
+    public MeetRegistration save(MeetRegistration registration) {
+        MeetRegistrationEntity entityToSave = MeetRegistrationMapper.toEntity(registration);
+
+        MeetRegistrationEntity savedEntity = meetRegistrationRepository.save(entityToSave);
+
+
+        return MeetRegistrationMapper.toDomain(savedEntity);
+    }
+
+    @Override
+    public boolean existsByMeetIdAndStudentId(UUID meetId, String studentId) {
+        return meetRegistrationRepository.existsByMeetIdAndStudentId(meetId, studentId);
     }
 }
