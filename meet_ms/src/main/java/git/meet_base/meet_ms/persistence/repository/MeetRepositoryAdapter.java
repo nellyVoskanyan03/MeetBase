@@ -7,6 +7,7 @@ import git.meet_base.meet_ms.persistence.mapper.MeetMapper;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -54,5 +55,11 @@ public class MeetRepositoryAdapter implements MeetDomainRepository {
         return entities.stream()
                 .map(MeetMapper::toDomain)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Optional<Meet> findById(UUID meetId) {
+        return Optional.ofNullable(
+                MeetMapper.toDomain(meetRepository.findById(meetId)));
     }
 }

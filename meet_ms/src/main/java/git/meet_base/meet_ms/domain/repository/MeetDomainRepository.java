@@ -3,6 +3,7 @@ package git.meet_base.meet_ms.domain.repository;
 import git.meet_base.meet_ms.domain.model.Meet;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface MeetDomainRepository {
@@ -13,4 +14,6 @@ public interface MeetDomainRepository {
     List<Meet> findByLecturerId(String userId);
 
     List<Meet> findAll();
+
+    Optional<Meet> findById(UUID meetId);
 }

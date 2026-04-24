@@ -1,5 +1,7 @@
 package git.meet_base.meet_ms.api.controller;
 
+import git.meet_base.meet_ms.api.dto.LecturerRespondRequest;
+import git.meet_base.meet_ms.api.dto.LecturerRespondResponse;
 import git.meet_base.meet_ms.api.mapper.MeetMapper;
 import git.meet_base.meet_ms.api.dto.CreateMeetRequest;
 import git.meet_base.meet_ms.api.dto.MeetResponse;
@@ -12,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
@@ -49,6 +52,24 @@ public class MeetController {
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(responseList);
+    }
+
+    @PostMapping("/{id}/respond")
+    public ResponseEntity<LecturerRespondResponse> respondToInvitation(
+            @PathVariable("id") UUID meetId,
+            @Valid @RequestBody LecturerRespondRequest request) {
+
+        git.meet_base.meet_ms.domain.model.Meet updatedMeet =
+                meetService.respondToInvitation(meetId, request.getLecturerId(), request.getAccepted());
+
+
+        LecturerRespondResponse response = new LecturerRespondResponse(
+                "Lecturer response recorded.",
+                updatedMeet.getId(),
+                updatedMeet.getStatus().name()
+        );
+
+        return ResponseEntity.ok(response);
     }
 
 }

@@ -1,6 +1,5 @@
 package git.meet_base.meet_ms.persistence.repository;
 
-import git.meet_base.meet_ms.domain.model.Meet;
 import git.meet_base.meet_ms.persistence.entity.MeetEntity;
 import org.springframework.data.repository.Repository;
 
@@ -15,4 +14,6 @@ public interface MeetRepository extends Repository<MeetEntity, UUID> {
     List<MeetEntity> findByLecturerId(String id);
 
     List<MeetEntity> findAll();
+
+    MeetEntity findById(UUID meetId);
 }

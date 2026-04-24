@@ -6,7 +6,7 @@ import git.meet_base.meet_ms.domain.model.Meet;
 
 public class MeetMapper {
 
-    public static Meet  toDomain(CreateMeetRequest dto) {
+    public static Meet toDomain(CreateMeetRequest dto) {
         if (dto == null) {
             return null;
         }

@@ -1,13 +1,13 @@
 package git.meet_base.meet_ms.domain.service;
 
+import git.meet_base.meet_ms.domain.exception.ResourceNotFoundException;
+import git.meet_base.meet_ms.domain.exception.UnauthorizedActionException;
 import git.meet_base.meet_ms.domain.model.Meet;
 import git.meet_base.meet_ms.domain.model.MeetRegistration;
 import git.meet_base.meet_ms.domain.model.MeetStatus;
 import git.meet_base.meet_ms.domain.model.UserRole;
 import git.meet_base.meet_ms.domain.repository.MeetDomainRegistrationRepository;
 import git.meet_base.meet_ms.domain.repository.MeetDomainRepository;
-import git.meet_base.meet_ms.persistence.repository.MeetRegistrationRepository;
-import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -64,5 +64,22 @@ public class MeetService {
                 .filter(meet -> status == null || meet.getStatus() == status)
                 .filter(meet -> companyId == null || companyId.equals(meet.getCompanyId()))
                 .toList();
+    }
+
+    public Meet respondToInvitation(UUID meetId, String lecturerId, Boolean accepted) {
+        Meet meet = meetDomainRepository.findById(meetId)
+                .orElseThrow(() -> new ResourceNotFoundException("Meeting not found with ID: " + meetId));
+
+        if (!lecturerId.equals(meet.getLecturerId())) {
+            throw new UnauthorizedActionException("Unauthorized: Lecturer ID does not match the meeting record.");
+        }
+
+        if (accepted) {
+            meet.setStatus(MeetStatus.PENDING);
+        } else {
+            meet.setStatus(MeetStatus.CANCELLED);
+        }
+
+        return meetDomainRepository.save(meet);
     }
 }
