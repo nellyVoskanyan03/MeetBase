@@ -41,6 +41,7 @@ public class MeetService {
     ) {
         List<Meet> userMeets = new ArrayList<>();
         if (role != null && userId != null) {
+            //Todo for later: role and id won't be needed when the JWT is added
             switch (role) {
                 case STUDENT -> {
                     List<MeetRegistration> registrations = meetDomainRegistrationRepository.findByStudentId(userId);
@@ -53,6 +54,7 @@ public class MeetService {
                     }
                 }
                 case LECTURER -> userMeets = meetDomainRepository.findByLecturerId(userId);
+                //Todo for later: use the company id of the manager to get the meets
                 case MANAGER -> userMeets = meetDomainRepository.findAll();
             }
 

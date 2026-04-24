@@ -56,14 +56,14 @@ public class MeetController {
             @PathVariable("id") UUID meetId,
             @Valid @RequestBody LecturerRespondRequest request) {
 
-        git.meet_base.meet_ms.domain.model.Meet updatedMeet =
-                meetService.respondToInvitation(meetId, request.getLecturerId(), request.getAccepted());
+        MeetResponse updatedMeet =
+                MeetMapper.toDto(meetService.respondToInvitation(meetId, request.getLecturerId(), request.getAccepted()));
 
 
         LecturerRespondResponse response = new LecturerRespondResponse(
                 "Lecturer response recorded.",
-                updatedMeet.getId(),
-                updatedMeet.getStatus().name()
+                updatedMeet.getMeetId(),
+                updatedMeet.getStatus()
         );
 
         return ResponseEntity.ok(response);
@@ -74,14 +74,14 @@ public class MeetController {
             @PathVariable("id") UUID meetId,
             @Valid @RequestBody StudentRegisterRequest request) {
 
-        git.meet_base.meet_ms.domain.model.Meet updatedMeet =
-                meetService.registerStudent(meetId, request.getStudentId());
+        MeetResponse updatedMeet =
+                MeetMapper.toDto(meetService.registerStudent(meetId, request.getStudentId()));
 
         StudentRegisterResponse response = new StudentRegisterResponse(
                 "Successfully registered for the meeting.",
-                updatedMeet.getId(),
+                updatedMeet.getMeetId(),
                 updatedMeet.getActualParticipants(),
-                updatedMeet.getStatus().name()
+                updatedMeet.getStatus()
         );
 
         return ResponseEntity.ok(response);
