@@ -38,6 +38,7 @@ public class MeetMapper {
         dto.setActualParticipants(domain.getActualParticipants());
         dto.setStatus(domain.getStatus().name());
         dto.setHangoutLink(domain.getHangoutLink());
+        dto.setGoogleCalendarEventId(domain.getGoogleCalendarEventId());
 
         return dto;
     }

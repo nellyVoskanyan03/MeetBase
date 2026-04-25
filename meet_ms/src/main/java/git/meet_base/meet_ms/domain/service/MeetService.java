@@ -8,9 +8,12 @@ import git.meet_base.meet_ms.domain.exception.UnauthorizedActionException;
 import git.meet_base.meet_ms.domain.model.*;
 import git.meet_base.meet_ms.domain.repository.MeetDomainRegistrationRepository;
 import git.meet_base.meet_ms.domain.repository.MeetDomainRepository;
+import git.meet_base.meet_ms.infrastructure.CalendarEventResult;
+import git.meet_base.meet_ms.infrastructure.GoogleCalendarClient;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -22,11 +25,13 @@ public class MeetService {
     private final MeetDomainRepository meetDomainRepository;
     private final MeetDomainRegistrationRepository meetDomainRegistrationRepository;
     private final MeetEventProducer meetEventProducer;
+    private final GoogleCalendarClient googleCalendarClient;
 
-    public MeetService(MeetDomainRepository meetDomainRepository, MeetDomainRegistrationRepository meetDomainRegistrationRepository, MeetEventProducer meetEventProducer) {
+    public MeetService(MeetDomainRepository meetDomainRepository, MeetDomainRegistrationRepository meetDomainRegistrationRepository, MeetEventProducer meetEventProducer, GoogleCalendarClient googleCalendarClient) {
         this.meetDomainRepository = meetDomainRepository;
         this.meetDomainRegistrationRepository = meetDomainRegistrationRepository;
         this.meetEventProducer = meetEventProducer;
+        this.googleCalendarClient = googleCalendarClient;
     }
 
     public Meet initializeMeeting(Meet meet) {
@@ -151,6 +156,7 @@ public class MeetService {
         return meetDomainRepository.save(meet);
     }
 
+    @Transactional
     public Meet approveMeeting(UUID meetId) {
         Meet meet = meetDomainRepository.findById(meetId)
                 .orElseThrow(() -> new ResourceNotFoundException("Meeting not found with ID: " + meetId));
@@ -167,12 +173,21 @@ public class MeetService {
 
         meet.setStatus(MeetStatus.APPROVED);
 
-        //TODO: add GoogleCalendarClient call
-        String generatedEventId = "";
-        String generatedLink = "https://meet.google.com/";
 
-        meet.setGoogleCalendarEventId(generatedEventId);
-        meet.setHangoutLink(generatedLink);
+        try {
+            CalendarEventResult googleResult = googleCalendarClient.createMeetingWithHangoutLink(
+                    "University Class: " + meet.getCourse(),
+                    "Place: " + meet.getPlace(),
+                    meet.getDateTime().toString(),
+                    meet.getDateTime().plusHours(1).toString()
+            );
+
+            meet.setGoogleCalendarEventId(googleResult.getEventId());
+            meet.setHangoutLink(googleResult.getMeetLink());
+
+        } catch (Exception e) {
+            throw new RuntimeException("Google Calendar integration failed. Meeting not approved.", e);
+        }
 
         Meet savedMeet = meetDomainRepository.save(meet);
 
@@ -207,7 +222,17 @@ public class MeetService {
 
         if (meet.getStatus() == MeetStatus.APPROVED) {
 
-            // TODO: Call Google Calendar API to reschedule the event
+            try {
+                googleCalendarClient.updateMeetingEvent(
+                        meet.getGoogleCalendarEventId(),
+                        "University Class: " + meet.getCourse(),
+                        "Location updated to: " + meet.getPlace(),
+                        meet.getDateTime().toString(),
+                        meet.getDateTime().plusHours(1).toString()
+                );
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to sync meeting update with Google Calendar: " + e.getMessage(), e);
+            }
 
             notifyAllParticipants(
                     meet,
@@ -229,7 +254,13 @@ public class MeetService {
 
         if (previousStatus == MeetStatus.APPROVED) {
 
-            // TODO: Call Google Calendar API to delete the event from everyone's calendars
+            if (meet.getGoogleCalendarEventId() != null) {
+                try {
+                    googleCalendarClient.deleteMeetingEvent(meet.getGoogleCalendarEventId());
+                } catch (Exception e) {
+                    System.err.println("Note: Could not delete Google Event: " + e.getMessage());
+                }
+            }
 
             notifyAllParticipants(
                     meet,

@@ -31,3 +31,9 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Security & Credentials ###
+google-credentials.json
+src/main/resources/google-credentials.json
+*.p12
+*.pem
