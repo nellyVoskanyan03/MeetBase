@@ -5,10 +5,11 @@ import git.meet_base.meet_ms.domain.exception.UnauthorizedActionException;
 import git.meet_base.meet_ms.domain.model.*;
 import git.meet_base.meet_ms.domain.repository.MeetDomainRegistrationRepository;
 import git.meet_base.meet_ms.domain.repository.MeetDomainRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,13 +32,13 @@ public class MeetService {
         return meetDomainRepository.save(meet);
     }
 
-    public List<Meet> getFilteredMeets(
+    public Page<Meet> getFilteredMeets(
             UserRole role,
             MeetStatus status,
             String companyId,
-            String userId
+            String userId,
+            Pageable pageable
     ) {
-        List<Meet> userMeets = new ArrayList<>();
         if (role != null && userId != null) {
             //Todo for later: role and id won't be needed when the JWT is added
             switch (role) {
@@ -48,19 +49,19 @@ public class MeetService {
                             .toList();
 
                     if (!meetIds.isEmpty()) {
-                        userMeets = meetDomainRepository.findByIdIn(meetIds);
+                        return meetDomainRepository.findByIdInFiltered(meetIds, status, companyId, pageable);
                     }
                 }
-                case LECTURER -> userMeets = meetDomainRepository.findByLecturerId(userId);
+                case LECTURER -> {
+                    return meetDomainRepository.findByLecturerIdFiltered(userId, status, companyId, pageable);
+                }
                 //Todo for later: use the company id of the manager to get the meets
-                case MANAGER -> userMeets = meetDomainRepository.findAll();
+                case MANAGER -> {
+                    return meetDomainRepository.findAllFiltered(status, companyId, pageable);
+                }
             }
-
         }
-        return userMeets.stream()
-                .filter(meet -> status == null || meet.getStatus() == status)
-                .filter(meet -> companyId == null || companyId.equals(meet.getCompanyId()))
-                .toList();
+        return Page.empty(pageable);
     }
 
     public Meet respondToInvitation(UUID meetId, String lecturerId, Boolean accepted) {
@@ -191,4 +192,5 @@ public class MeetService {
 
         return meetDomainRepository.save(meet);
     }
+
 }

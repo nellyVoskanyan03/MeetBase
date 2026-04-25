@@ -1,0 +1,323 @@
+openapi: 3.0.3
+info:
+  title: Meet Microservice API
+  description: Handles the lifecycle of meetings between Students, Lecturers, and Companies.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Local Development Server
+
+paths:
+  /meets:
+    get:
+      summary: Get paginated and filtered meetings
+      tags:
+        - Meets
+      parameters:
+        - name: role
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/UserRole'
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/MeetStatus'
+        - name: companyId
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: A paginated list of meetings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageMeetResponse'
+
+  /meets/{id}/respond:
+    post:
+      summary: Lecturer responds to a meeting invitation
+      tags:
+        - Meets
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LecturerRespondRequest'
+      responses:
+        '200':
+          description: Response successfully recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LecturerRespondResponse'
+        '400':
+          description: Bad Request (Validation or Unauthorized action)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+        '404':
+          description: Meeting not found
+
+  /meets/{id}/register:
+    post:
+      summary: Student registers for a meeting
+      tags:
+        - Meets
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentRegisterRequest'
+      responses:
+        '200':
+          description: Successfully registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentRegisterResponse'
+        '400':
+          description: Bad Request (Already registered or not pending)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+
+  /meets/{id}/approve:
+    post:
+      summary: Manager approves a meeting
+      tags:
+        - Meets
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Meeting formally approved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApproveMeetResponse'
+        '400':
+          description: Cannot approve (Minimum students not met)
+
+  /meets/{id}:
+    patch:
+      summary: Partially update a meeting (Place/Time)
+      tags:
+        - Meets
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMeetRequest'
+      responses:
+        '200':
+          description: Meeting updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateMeetResponse'
+    delete:
+      summary: Cancel a meeting
+      tags:
+        - Meets
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Meeting successfully cancelled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CancelMeetResponse'
+
+components:
+  schemas:
+    UserRole:
+      type: string
+      enum: [STUDENT, LECTURER, COMPANY, MANAGER]
+
+    MeetStatus:
+      type: string
+      enum: [CREATED, PENDING, APPROVED, CANCELLED]
+
+    # --- Requests ---
+    LecturerRespondRequest:
+      type: object
+      required:
+        - lecturerId
+        - accepted
+      properties:
+        lecturerId:
+          type: string
+        accepted:
+          type: boolean
+
+    StudentRegisterRequest:
+      type: object
+      required:
+        - studentId
+      properties:
+        studentId:
+          type: string
+
+    UpdateMeetRequest:
+      type: object
+      properties:
+        place:
+          type: string
+        dateTime:
+          type: string
+          format: date-time
+          description: Must be in the future
+
+    # --- Responses ---
+    PageMeetResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            type: object # You can expand this to a full MeetResponse schema
+        pageable:
+          type: object
+        totalPages:
+          type: integer
+        totalElements:
+          type: integer
+        size:
+          type: integer
+        number:
+          type: integer
+
+    LecturerRespondResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        meetId:
+          type: string
+          format: uuid
+        status:
+          type: string
+
+    StudentRegisterResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        meetId:
+          type: string
+          format: uuid
+        actualParticipants:
+          type: integer
+        status:
+          type: string
+
+    ApproveMeetResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        meetId:
+          type: string
+          format: uuid
+        status:
+          type: string
+        googleCalendarEventId:
+          type: string
+        hangoutLink:
+          type: string
+
+    UpdateMeetResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        meetId:
+          type: string
+          format: uuid
+        updatedFields:
+          type: object
+          additionalProperties: true
+        status:
+          type: string
+
+    CancelMeetResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        meetId:
+          type: string
+          format: uuid
+        status:
+          type: string
+
+    ApiErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+        error:
+          type: string
+        message:
+          type: string
+        path:
+          type: string

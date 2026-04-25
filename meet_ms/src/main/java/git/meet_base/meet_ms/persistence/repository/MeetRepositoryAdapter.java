@@ -1,9 +1,12 @@
 package git.meet_base.meet_ms.persistence.repository;
 
 import git.meet_base.meet_ms.domain.model.Meet;
+import git.meet_base.meet_ms.domain.model.MeetStatus;
 import git.meet_base.meet_ms.domain.repository.MeetDomainRepository;
 import git.meet_base.meet_ms.persistence.entity.MeetEntity;
 import git.meet_base.meet_ms.persistence.mapper.MeetMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -29,32 +32,22 @@ public class MeetRepositoryAdapter implements MeetDomainRepository {
 
         return MeetMapper.toDomain(savedEntity);
     }
-
     @Override
-    public List<Meet> findByIdIn(List<UUID> ids) {
-        List<MeetEntity> entities = meetRepository.findByIdIn(ids);
-
-        return entities.stream()
-                .map(MeetMapper::toDomain)
-                .collect(Collectors.toList());
+    public Page<Meet> findByLecturerIdFiltered(String lecturerId, MeetStatus status, String companyId, Pageable pageable) {
+        return meetRepository.findByLecturerIdDynamic(lecturerId, status, companyId, pageable)
+                .map(MeetMapper::toDomain);
     }
 
     @Override
-    public List<Meet> findByLecturerId(String id) {
-        List<MeetEntity> entities = meetRepository.findByLecturerId(id);
-
-        return entities.stream()
-                .map(MeetMapper::toDomain)
-                .collect(Collectors.toList());
+    public Page<Meet> findByIdInFiltered(List<UUID> meetIds, MeetStatus status, String companyId, Pageable pageable) {
+        return meetRepository.findByIdInDynamic(meetIds, status, companyId, pageable)
+                .map(MeetMapper::toDomain);
     }
 
     @Override
-    public List<Meet> findAll() {
-        List<MeetEntity> entities = meetRepository.findAll();
-
-        return entities.stream()
-                .map(MeetMapper::toDomain)
-                .collect(Collectors.toList());
+    public Page<Meet> findAllFiltered(MeetStatus status, String companyId, Pageable pageable) {
+        return meetRepository.findAllDynamic(status, companyId, pageable)
+                .map(MeetMapper::toDomain);
     }
 
     @Override

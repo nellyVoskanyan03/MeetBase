@@ -7,6 +7,8 @@ import git.meet_base.meet_ms.domain.model.UpdateMeetCommand;
 import git.meet_base.meet_ms.domain.model.UserRole;
 import git.meet_base.meet_ms.domain.service.MeetService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -38,18 +40,17 @@ public class MeetController {
     }
 
     @GetMapping
-    public ResponseEntity<List<MeetResponse>> getMeets(
+    public ResponseEntity<Page<MeetResponse>> getMeets(
             @RequestParam() UserRole role,
             @RequestParam(required = false) MeetStatus status,
             @RequestParam(required = false) String companyId,
-            @RequestParam() String userId) {
+            @RequestParam() String userId,
+            Pageable pageable) {
 
 
-        List<MeetResponse> responseList = meetService
-                .getFilteredMeets(role, status, companyId, userId)
-                .stream()
-                .map(MeetMapper::toDto)
-                .collect(Collectors.toList());
+       Page<MeetResponse> responseList = meetService
+                .getFilteredMeets(role, status, companyId, userId, pageable)
+                .map(MeetMapper::toDto);
 
         return ResponseEntity.ok(responseList);
     }
