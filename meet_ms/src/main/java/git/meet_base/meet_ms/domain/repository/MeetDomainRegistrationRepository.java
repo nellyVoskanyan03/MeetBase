@@ -11,4 +11,6 @@ public interface MeetDomainRegistrationRepository {
     MeetRegistration save(MeetRegistration registration);
 
     boolean existsByMeetIdAndStudentId(UUID meetId, String studentId);
+
+    List<MeetRegistration> findByMeetId(UUID id);
 }

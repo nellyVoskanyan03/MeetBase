@@ -42,4 +42,13 @@ public class MeetRegistrationRepositoryAdapter implements MeetDomainRegistration
     public boolean existsByMeetIdAndStudentId(UUID meetId, String studentId) {
         return meetRegistrationRepository.existsByMeetIdAndStudentId(meetId, studentId);
     }
+
+    @Override
+    public List<MeetRegistration> findByMeetId(UUID id) {
+        List<MeetRegistrationEntity> entities = meetRegistrationRepository.findByMeetId(id);
+        return entities
+                .stream()
+                .map(MeetRegistrationMapper::toDomain)
+                .toList();
+    }
 }

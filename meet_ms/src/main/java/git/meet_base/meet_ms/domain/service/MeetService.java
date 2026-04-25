@@ -1,5 +1,8 @@
 package git.meet_base.meet_ms.domain.service;
 
+import git.meet_base.meet_ms.api.event.MeetActionType;
+import git.meet_base.meet_ms.api.event.MeetEventProducer;
+import git.meet_base.meet_ms.api.event.MeetNotificationEvent;
 import git.meet_base.meet_ms.domain.exception.ResourceNotFoundException;
 import git.meet_base.meet_ms.domain.exception.UnauthorizedActionException;
 import git.meet_base.meet_ms.domain.model.*;
@@ -18,18 +21,30 @@ public class MeetService {
 
     private final MeetDomainRepository meetDomainRepository;
     private final MeetDomainRegistrationRepository meetDomainRegistrationRepository;
+    private final MeetEventProducer meetEventProducer;
 
-    public MeetService(MeetDomainRepository meetDomainRepository, MeetDomainRegistrationRepository meetDomainRegistrationRepository) {
+    public MeetService(MeetDomainRepository meetDomainRepository, MeetDomainRegistrationRepository meetDomainRegistrationRepository, MeetEventProducer meetEventProducer) {
         this.meetDomainRepository = meetDomainRepository;
         this.meetDomainRegistrationRepository = meetDomainRegistrationRepository;
+        this.meetEventProducer = meetEventProducer;
     }
 
     public Meet initializeMeeting(Meet meet) {
         meet.setStatus(MeetStatus.CREATED);
         meet.setActualParticipants(0);
-        // TODO: Publish "MeetCreatedEvent" to Kafka and Notify the assigned Lecturer
 
-        return meetDomainRepository.save(meet);
+        Meet savedMeet = meetDomainRepository.save(meet);
+
+        MeetNotificationEvent event = new MeetNotificationEvent(
+                savedMeet.getId(),
+                UserRole.LECTURER,
+                List.of(savedMeet.getLecturerId()),
+                MeetActionType.MEET_CREATED,
+                "A new meeting requires your approval."
+        );
+        meetEventProducer.sendNotification(event);
+
+        return savedMeet;
     }
 
     public Page<Meet> getFilteredMeets(
@@ -55,7 +70,6 @@ public class MeetService {
                 case LECTURER -> {
                     return meetDomainRepository.findByLecturerIdFiltered(userId, status, companyId, pageable);
                 }
-                //Todo for later: use the company id of the manager to get the meets
                 case MANAGER -> {
                     return meetDomainRepository.findAllFiltered(status, companyId, pageable);
                 }
@@ -76,15 +90,30 @@ public class MeetService {
             throw new UnauthorizedActionException("Only meetings with status created can be responded to.");
         }
 
+        MeetActionType actionType;
+        String message;
+
         if (accepted) {
             meet.setStatus(MeetStatus.PENDING);
+            actionType = MeetActionType.INVITATION_ACCEPTED;
+            message = "The assigned lecturer has accepted the meeting invitation.";
         } else {
             meet.setStatus(MeetStatus.CANCELLED);
+            actionType = MeetActionType.INVITATION_REJECTED;
+            message = "The assigned lecturer has rejected the meeting invitation.";
         }
 
-        // TODO: Publish "LecturerRespondedEvent" to Kafka and Notify the Company
+        Meet savedMeet = meetDomainRepository.save(meet);
+        MeetNotificationEvent event = new MeetNotificationEvent(
+                savedMeet.getId(),
+                UserRole.COMPANY,
+                List.of(savedMeet.getCompanyId()),
+                actionType,
+                message
+        );
+        meetEventProducer.sendNotification(event);
 
-        return meetDomainRepository.save(meet);
+        return savedMeet;
     }
 
     public Meet registerStudent(UUID meetId, String studentId) {
@@ -108,8 +137,15 @@ public class MeetService {
 
         meet.setActualParticipants(meet.getActualParticipants() + 1);
 
-        if (meet.getActualParticipants() >= meet.getMinStudentCount()) {
-            // TODO for later: add notification for managers to approve
+        if (meet.getActualParticipants() == meet.getMinStudentCount()) {
+            MeetNotificationEvent event = new MeetNotificationEvent(
+                    meet.getId(),
+                    UserRole.MANAGER,
+                    null, // Null means broadcast to ALL Managers
+                    MeetActionType.APPROVAL_REQUIRED,
+                    "Meeting has reached the minimum student threshold and is ready for approval."
+            );
+            meetEventProducer.sendNotification(event);
         }
 
         return meetDomainRepository.save(meet);
@@ -138,9 +174,15 @@ public class MeetService {
         meet.setGoogleCalendarEventId(generatedEventId);
         meet.setHangoutLink(generatedLink);
 
-        // TODO: Publish final "Confirmed" event to Kafka and Notify the Company, Lecturer, and all Registered Students
+        Meet savedMeet = meetDomainRepository.save(meet);
 
-        return meetDomainRepository.save(meet);
+        notifyAllParticipants(
+                savedMeet,
+                MeetActionType.MEET_APPROVED,
+                "The meeting has been officially approved. Calendar links are generated!"
+        );
+
+        return savedMeet;
     }
 
     public Meet updateMeeting(UUID meetId, UpdateMeetCommand command) {
@@ -167,7 +209,11 @@ public class MeetService {
 
             // TODO: Call Google Calendar API to reschedule the event
 
-            // TODO: Publish event to Kafka and Notify all participants (Students, Lecturer, Company) about the time/location change.
+            notifyAllParticipants(
+                    meet,
+                    MeetActionType.MEET_UPDATED,
+                    "The time or location for your meeting has changed."
+            );
         }
 
         return meetDomainRepository.save(meet);
@@ -185,12 +231,44 @@ public class MeetService {
 
             // TODO: Call Google Calendar API to delete the event from everyone's calendars
 
-            // TODO: Publish "MeetingCancelledEvent" to Kafka Alert the Lecturer, Company, and Students that the event is off.
+            notifyAllParticipants(
+                    meet,
+                    MeetActionType.MEET_CANCELLED,
+                    "The meeting has been cancelled."
+            );
         } else if (previousStatus == MeetStatus.PENDING) {
-            // TODO: Publish "MeetingCancelledEvent" to Kafka Alert the Lecturer, Company, and Students that the event is off.
+            notifyAllParticipants(
+                    meet,
+                    MeetActionType.MEET_CANCELLED,
+                    "The pending meeting has been cancelled."
+            );
         }
 
         return meetDomainRepository.save(meet);
+    }
+
+    private void notifyAllParticipants(Meet meet, MeetActionType action, String message) {
+
+        meetEventProducer.sendNotification(new MeetNotificationEvent(
+                meet.getId(), UserRole.COMPANY, List.of(meet.getCompanyId()), action, message
+        ));
+
+        if (meet.getLecturerId() != null) {
+            meetEventProducer.sendNotification(new MeetNotificationEvent(
+                    meet.getId(), UserRole.LECTURER, List.of(meet.getLecturerId()), action, message
+            ));
+        }
+
+        List<String> registeredStudentIds = meetDomainRegistrationRepository.findByMeetId(meet.getId())
+                .stream()
+                .map(MeetRegistration::getStudentId)
+                .toList();
+
+        if (!registeredStudentIds.isEmpty()) {
+            meetEventProducer.sendNotification(new MeetNotificationEvent(
+                    meet.getId(), UserRole.STUDENT, registeredStudentIds, action, message
+            ));
+        }
     }
 
 }
