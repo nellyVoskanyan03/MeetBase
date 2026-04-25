@@ -6,6 +6,9 @@ spring:
   application:
     name: meet-service
 
+  kafka:
+    bootstrap-servers: ${KAFKA_SERVER}
+
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/meetdb}
     username: ${DB_USERNAME:postgres}
@@ -22,13 +25,6 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
-  kafka:
-    producer:
-      bootstrap-servers: localhost:9092
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      properties:
-        spring.json.add.type.headers: false
 
 logging:
   level:
