@@ -175,6 +175,7 @@ public class MeetService {
 
 
         try {
+            //Todo: get the duration of the class from the request body
             CalendarEventResult googleResult = googleCalendarClient.createMeetingWithHangoutLink(
                     "University Class: " + meet.getCourse(),
                     "Place: " + meet.getPlace(),
@@ -223,6 +224,7 @@ public class MeetService {
         if (meet.getStatus() == MeetStatus.APPROVED) {
 
             try {
+                //Todo: get the duration of the class from the request body
                 googleCalendarClient.updateMeetingEvent(
                         meet.getGoogleCalendarEventId(),
                         "University Class: " + meet.getCourse(),

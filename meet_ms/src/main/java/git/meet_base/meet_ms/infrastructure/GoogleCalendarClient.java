@@ -19,6 +19,8 @@ import java.util.UUID;
 public class GoogleCalendarClient {
 
     private final Calendar calendarService;
+
+    //Todo: get the calendar id from every company separately during the login
     private final String CALENDAR_ID = "voskanyannelli03@gmail.com";
 
     public GoogleCalendarClient() throws Exception {
