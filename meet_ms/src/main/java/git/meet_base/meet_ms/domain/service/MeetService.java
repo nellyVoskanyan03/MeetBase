@@ -21,7 +21,7 @@ import java.util.UUID;
 
 @Service
 public class MeetService {
-
+    //todo: correct the messages and figure out how to send event invitation links
     private final MeetDomainRepository meetDomainRepository;
     private final MeetDomainRegistrationRepository meetDomainRegistrationRepository;
     private final MeetEventProducer meetEventProducer;
