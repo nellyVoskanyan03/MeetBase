@@ -43,6 +43,7 @@ public class MeetService {
         MeetNotificationEvent event = new MeetNotificationEvent(
                 savedMeet.getId(),
                 UserRole.LECTURER,
+                meet.getCompanyId(),
                 List.of(savedMeet.getLecturerId()),
                 MeetActionType.MEET_CREATED,
                 "A new meeting requires your approval."
@@ -112,6 +113,7 @@ public class MeetService {
         MeetNotificationEvent event = new MeetNotificationEvent(
                 savedMeet.getId(),
                 UserRole.COMPANY,
+                meet.getCompanyId(),
                 List.of(savedMeet.getCompanyId()),
                 actionType,
                 message
@@ -146,6 +148,7 @@ public class MeetService {
             MeetNotificationEvent event = new MeetNotificationEvent(
                     meet.getId(),
                     UserRole.MANAGER,
+                    meet.getCompanyId(),
                     null, // Null means broadcast to ALL Managers
                     MeetActionType.APPROVAL_REQUIRED,
                     "Meeting has reached the minimum student threshold and is ready for approval."
@@ -283,12 +286,12 @@ public class MeetService {
     private void notifyAllParticipants(Meet meet, MeetActionType action, String message) {
 
         meetEventProducer.sendNotification(new MeetNotificationEvent(
-                meet.getId(), UserRole.COMPANY, List.of(meet.getCompanyId()), action, message
+                meet.getId(), UserRole.COMPANY, meet.getCompanyId(), List.of(meet.getCompanyId()), action, message
         ));
 
         if (meet.getLecturerId() != null) {
             meetEventProducer.sendNotification(new MeetNotificationEvent(
-                    meet.getId(), UserRole.LECTURER, List.of(meet.getLecturerId()), action, message
+                    meet.getId(), UserRole.LECTURER, meet.getCompanyId(), List.of(meet.getLecturerId()), action, message
             ));
         }
 
@@ -299,7 +302,7 @@ public class MeetService {
 
         if (!registeredStudentIds.isEmpty()) {
             meetEventProducer.sendNotification(new MeetNotificationEvent(
-                    meet.getId(), UserRole.STUDENT, registeredStudentIds, action, message
+                    meet.getId(), UserRole.STUDENT, meet.getCompanyId(), registeredStudentIds, action, message
             ));
         }
     }
