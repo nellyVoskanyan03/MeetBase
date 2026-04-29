@@ -52,6 +52,18 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  auth-postgres:
+    image: postgres:15-alpine
+    container_name: auth_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: auth_db
+    ports:
+      - "5433:5432" # Mapped to 5433 on the host to avoid port conflict
+    volumes:
+      - auth_postgres_data:/var/lib/postgresql/data
+
   meet-ms:
     build: ./meet_ms
     container_name: meet_ms_app
@@ -76,5 +88,21 @@ services:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     depends_on:
       - kafka
+  auth-ms:
+    build: ./auth_ms
+    container_name: auth_ms_app
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_DATASOURCE_URL: jdbc:postgresql://auth-postgres:5432/auth_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: root
+    depends_on:
+      - auth-postgres
+      - kafka
 volumes:
   postgres_data:
+    driver: local
+  auth_postgres_data:
+    driver: local
