@@ -1,11 +1,10 @@
 package git.meet_base.auth_ms.controller;
 
-import git.meet_base.auth_ms.dto.BatchEmailRequest;
 import git.meet_base.auth_ms.service.UserService;
-import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -21,8 +20,8 @@ public class InternalUserController {
 
     // Explicitly documenting this is for internal MS communication
     @PostMapping("/batch")
-    public ResponseEntity<Map<UUID, String>> getEmailsBatch(@Valid @RequestBody BatchEmailRequest request) {
-        Map<UUID, String> emailMap = userService.getUserEmailsBatch(request.getUserIds());
+    public ResponseEntity<Map<UUID, String>> getEmailsBatch(@RequestBody List<UUID> userIds ) {
+        Map<UUID, String> emailMap = userService.getUserEmailsBatch(userIds);
         return ResponseEntity.ok(emailMap);
     }
 }

@@ -37,9 +37,9 @@ public class UserController {
     public ResponseEntity<List<UserResponse>> getUsers(
             @RequestParam(required = false) UserRole role,
             @RequestParam(required = false) Boolean isActive,
-            @RequestParam(required = false) String companyName) {
+            @RequestParam(required = false) UUID companyId) {
 
-        List<UserResponse> users = userService.getUsers(role, isActive, companyName);
+        List<UserResponse> users = userService.getUsers(role, isActive, companyId);
         return ResponseEntity.ok(users);
     }
 }

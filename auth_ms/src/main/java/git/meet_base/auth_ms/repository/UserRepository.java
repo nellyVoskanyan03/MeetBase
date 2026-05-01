@@ -29,11 +29,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT u FROM User u WHERE " +
             "(:role IS NULL OR u.role = :role) AND " +
-            "(:companyName IS NULL OR u.companyName = :companyName) AND " +
+            "(:companyId IS NULL OR u.companyId = :companyId) AND " +
             "(:isActive IS NULL OR u.isActive = :isActive)")
     List<User> findUsersWithFilters(
             @Param("role") UserRole role,
-            @Param("companyName") String companyName,
+            @Param("companyId") UUID companyId,
             @Param("isActive") Boolean isActive
     );
 }

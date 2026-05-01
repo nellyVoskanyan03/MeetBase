@@ -31,8 +31,8 @@ public class User {
     @Column(name = "last_name", length = 255)
     private String lastName;
 
-    @Column(name = "company_name", length = 255)
-    private String companyName;
+    @Column(name = "company_id", length = 255)
+    private UUID companyId;
 
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
@@ -55,7 +55,7 @@ public class User {
             UserRole role,
             String firstName,
             String lastName,
-            String companyName,
+            UUID companyId,
             Boolean isActive,
             OffsetDateTime createdAt,
             OffsetDateTime updatedAt
@@ -66,7 +66,7 @@ public class User {
         this.role = role;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.companyName = companyName;
+        this.companyId = companyId;
         this.isActive = isActive;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -120,12 +120,12 @@ public class User {
         this.lastName = lastName;
     }
 
-    public String getCompanyName() {
-        return companyName;
+    public UUID getCompanyId() {
+        return companyId;
     }
 
-    public void setCompanyName(String companyName) {
-        this.companyName = companyName;
+    public void setCompanyId(UUID companyId) {
+        this.companyId = companyId;
     }
 
     public Boolean getIsActive() {

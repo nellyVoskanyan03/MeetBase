@@ -12,7 +12,7 @@ public class UserResponse {
     private UserRole role;
     private String firstName;
     private String lastName;
-    private String companyName;
+    private UUID companyId;
     private boolean isActive;
     private OffsetDateTime createdAt;
     private OffsetDateTime updatedAt;
@@ -23,7 +23,7 @@ public class UserResponse {
         this.role = user.getRole();
         this.firstName = user.getFirstName();
         this.lastName = user.getLastName();
-        this.companyName = user.getCompanyName();
+        this.companyId = user.getCompanyId();
         this.isActive = user.getIsActive();
         this.createdAt = user.getCreatedAt();
         this.updatedAt = user.getUpdatedAt();
@@ -34,7 +34,7 @@ public class UserResponse {
     public UserRole getRole() { return role; }
     public String getFirstName() { return firstName; }
     public String getLastName() { return lastName; }
-    public String getCompanyName() { return companyName; }
+    public UUID getCompanyId() { return companyId; }
     public boolean isActive() { return isActive; }
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public OffsetDateTime getUpdatedAt() { return updatedAt; }

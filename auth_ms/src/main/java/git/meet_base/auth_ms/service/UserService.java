@@ -56,7 +56,7 @@ public class UserService {
 
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
-        user.setCompanyName(request.getCompanyName());
+        user.setCompanyId(request.getCompanyId());
 
 
         User savedUser = userRepository.save(user);
@@ -71,8 +71,8 @@ public class UserService {
         return new UserResponse(user);
     }
 
-    public List<UserResponse> getUsers(UserRole role, Boolean isActive, String companyName) {
-        List<User> users = userRepository.findUsersWithFilters(role, companyName, isActive);
+        public List<UserResponse> getUsers(UserRole role, Boolean isActive, UUID companyId) {
+        List<User> users = userRepository.findUsersWithFilters(role, companyId, isActive);
 
         return users.stream()
                 .map(UserResponse::new)

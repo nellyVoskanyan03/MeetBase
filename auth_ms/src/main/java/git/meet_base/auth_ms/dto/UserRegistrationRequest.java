@@ -5,6 +5,8 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+import java.util.UUID;
+
 public class UserRegistrationRequest {
 
     @NotBlank(message = "Email is required")
@@ -21,7 +23,7 @@ public class UserRegistrationRequest {
     @NotBlank(message = "Last name is required")
     private String lastName;
 
-    private String companyName;
+    private UUID companyId;
 
     private UserRole role;
 
@@ -37,8 +39,8 @@ public class UserRegistrationRequest {
     public String getLastName() { return lastName; }
     public void setLastName(String lastName) { this.lastName = lastName; }
 
-    public String getCompanyName() { return companyName; }
-    public void setCompanyName(String companyName) { this.companyName = companyName; }
+    public UUID getCompanyId() { return companyId; }
+    public void setCompanyId(UUID companyId) { this.companyId = companyId; }
 
     public UserRole getRole() { return role; }
     public void setRole(UserRole role) { this.role = role; }
