@@ -1,6 +1,6 @@
 package git.meet_base.notification_ms.infrastructure.messaging;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import git.meet_base.notification_ms.client.AuthClient;
 import git.meet_base.notification_ms.infrastructure.email.EmailService;
 import git.meet_base.notification_ms.infrastructure.messaging.dto.MeetEventPayload;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -16,9 +16,11 @@ import java.util.List;
 public class MeetEventConsumer {
 
     private final EmailService emailService;
+    private final AuthClient authClient;
 
-    public MeetEventConsumer(EmailService emailService) {
+    public MeetEventConsumer(EmailService emailService, AuthClient authClient) {
         this.emailService = emailService;
+        this.authClient = authClient;
     }
 
     @KafkaListener(
@@ -33,26 +35,32 @@ public class MeetEventConsumer {
                                   Acknowledgment acknowledgment) {
         System.out.println("KAFKA EVENT RECEIVED: \n" + payload.getMessage());
 
+        List<String> targetEmails;
+
         try {
 
             if (payload.getTargetUserIds() == null || payload.getTargetUserIds().isEmpty()) {
                 System.out.println("KAFKA EVENT FOR MANAGERS COMPANY: \n" + payload.getCompanyId());
-                //TODO: call login_ms to get the manager emails and send the emails
-                return;
+                targetEmails = authClient.getActiveManagerEmails(payload.getCompanyId());
+            }else {
+
+                targetEmails = authClient.getUserEmailsBatch(payload.getTargetUserIds());
             }
             String subject = "MeetBase Notification: " + payload.getAction().replace("_", " ");
 
-            //TODO: call login_ms to get the target emails and send the emails
-            List<String> emails = List.of("");
-
-            for (String email : emails) {
-                System.out.println("email: \n" + email);
-                emailService.sendEmail(email, subject, payload.getMessage());
+            if (targetEmails != null && !targetEmails.isEmpty()) {
+                for (String email : targetEmails) {
+                    System.out.println("Sending email to: " + email);
+                    emailService.sendEmail(email, subject, payload.getMessage());
+                }
+            } else {
+                System.out.println("No users found to notify for this event.");
             }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+        System.out.println("kk");
         //TODO: send acknowledgment to kafka(if there is an authid_ms do it there)
         //acknowledgment.acknowledge();
     }

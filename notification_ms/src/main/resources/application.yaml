@@ -1,6 +1,8 @@
 server:
   port: 8084
 
+AUTH_MS_URL: ${AUTH_URL:http://localhost:8083}
+
 spring:
   application:
     name: notification_ms
