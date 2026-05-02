@@ -1,6 +1,10 @@
 server:
   port: 8000
-
+application:
+  security:
+    jwt:
+      # THIS MUST MATCH AUTH_MS EXACTLY!
+      secret-key: 
 spring:
   application:
     name: gateway_ms
@@ -17,7 +21,9 @@ spring:
               - PUT
               - DELETE
               - OPTIONS
-            allowedHeaders: "*"
+            allowedHeaders:
+              - "Content-Type"
+              - "Authorization"
             allowCredentials: false
             maxAge: 3600
 
@@ -27,11 +33,15 @@ spring:
           uri: http://auth-ms:8083
           predicates:
             - Path=/api/v1/users/**, /users/**
+          filters:
+            - AuthenticationFilter
 
         - id: meet-service
           uri: http://meet-ms:8080
           predicates:
             - Path=/meets/**
+          filters:
+            - AuthenticationFilter
 
         # --- Swagger Doc Routes ---
         - id: auth-service-docs
