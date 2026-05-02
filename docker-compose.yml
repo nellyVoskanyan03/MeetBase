@@ -89,6 +89,7 @@ services:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     depends_on:
       - kafka
+      - auth-ms
   auth-ms:
     build: ./auth_ms
     container_name: auth_ms_app
@@ -102,6 +103,14 @@ services:
     depends_on:
       - auth-postgres
       - kafka
+  gateway-ms:
+    build: ./gateway_ms
+    container_name: gateway_ms_app
+    ports:
+      - "8000:8000" # Expose the "Front Door" to your computer
+    depends_on:
+      - auth-ms
+      - meet-ms
 volumes:
   postgres_data:
     driver: local
