@@ -1,6 +1,7 @@
 package git.meet_base.auth_ms.controller;
 
 import git.meet_base.auth_ms.service.UserService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,6 +21,7 @@ public class InternalUserController {
 
     // Explicitly documenting this is for internal MS communication
     @PostMapping("/batch")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<Map<UUID, String>> getEmailsBatch(@RequestBody List<UUID> userIds ) {
         Map<UUID, String> emailMap = userService.getUserEmailsBatch(userIds);
         return ResponseEntity.ok(emailMap);

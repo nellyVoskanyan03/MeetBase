@@ -5,6 +5,7 @@ import git.meet_base.auth_ms.dto.UserRegistrationRequest;
 import git.meet_base.auth_ms.dto.UserResponse;
 import git.meet_base.auth_ms.model.UserRole;
 import git.meet_base.auth_ms.service.UserService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,12 +32,14 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<UserResponse> getUserById(@PathVariable UUID id) {
         UserResponse user = userService.getUserById(id);
         return ResponseEntity.ok(user);
     }
 
     @GetMapping
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<List<UserResponse>> getUsers(
             @RequestParam(required = false) UserRole role,
             @RequestParam(required = false) Boolean isActive,
