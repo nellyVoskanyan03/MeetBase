@@ -16,7 +16,7 @@ public class MeetRegistrationEntity {
     private UUID meetId;
 
     @Column(name = "student_id", nullable = false)
-    private String studentId;
+    private UUID studentId;
 
     @Column(name = "registered_at", nullable = false, updatable = false)
     private ZonedDateTime registeredAt;
@@ -30,8 +30,8 @@ public class MeetRegistrationEntity {
     public void setId(UUID id) { this.id = id; }
     public UUID getMeetId() { return meetId; }
     public void setMeetId(UUID meetId) { this.meetId = meetId; }
-    public String getStudentId() { return studentId; }
-    public void setStudentId(String studentId) { this.studentId = studentId; }
+    public UUID getStudentId() { return studentId; }
+    public void setStudentId(UUID studentId) { this.studentId = studentId; }
     public ZonedDateTime getRegisteredAt() { return registeredAt; }
     public void setRegisteredAt(ZonedDateTime registeredAt) { this.registeredAt = registeredAt; }
 }

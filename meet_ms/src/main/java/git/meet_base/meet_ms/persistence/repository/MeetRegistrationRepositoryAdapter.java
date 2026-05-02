@@ -20,7 +20,7 @@ public class MeetRegistrationRepositoryAdapter implements MeetDomainRegistration
     }
 
     @Override
-    public List<MeetRegistration> findByStudentId(String studentId) {
+    public List<MeetRegistration> findByStudentId(UUID studentId) {
         List<MeetRegistrationEntity> entities = meetRegistrationRepository.findByStudentId(studentId);
         return entities
                 .stream()
@@ -39,7 +39,7 @@ public class MeetRegistrationRepositoryAdapter implements MeetDomainRegistration
     }
 
     @Override
-    public boolean existsByMeetIdAndStudentId(UUID meetId, String studentId) {
+    public boolean existsByMeetIdAndStudentId(UUID meetId, UUID studentId) {
         return meetRegistrationRepository.existsByMeetIdAndStudentId(meetId, studentId);
     }
 

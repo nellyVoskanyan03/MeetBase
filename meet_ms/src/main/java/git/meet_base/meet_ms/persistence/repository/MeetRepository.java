@@ -22,16 +22,16 @@ public interface MeetRepository extends Repository<MeetEntity, UUID> {
             "(:companyId IS NULL OR m.companyId = :companyId)")
     Page<MeetEntity> findAllDynamic(
             @Param("status") MeetStatus status,
-            @Param("companyId") String companyId,
+            @Param("companyId") UUID companyId,
             Pageable pageable);
 
     @Query("SELECT m FROM MeetEntity m WHERE m.lecturerId = :lecturerId AND " +
             "(:status IS NULL OR m.status = :status) AND " +
             "(:companyId IS NULL OR m.companyId = :companyId)")
     Page<MeetEntity> findByLecturerIdDynamic(
-            @Param("lecturerId") String lecturerId,
+            @Param("lecturerId") UUID lecturerId,
             @Param("status") MeetStatus status,
-            @Param("companyId") String companyId,
+            @Param("companyId") UUID companyId,
             Pageable pageable);
 
     @Query("SELECT m FROM MeetEntity m WHERE m.id IN :meetIds AND " +
@@ -40,6 +40,6 @@ public interface MeetRepository extends Repository<MeetEntity, UUID> {
     Page<MeetEntity> findByIdInDynamic(
             @Param("meetIds") List<UUID> meetIds,
             @Param("status") MeetStatus status,
-            @Param("companyId") String companyId,
+            @Param("companyId") UUID companyId,
             Pageable pageable);
 }

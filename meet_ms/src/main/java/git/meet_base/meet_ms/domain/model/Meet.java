@@ -6,8 +6,8 @@ import java.util.UUID;
 public class Meet {
     private UUID id;
     private String course;
-    private String companyId;
-    private String lecturerId;
+    private UUID companyId;
+    private UUID lecturerId;
     private ZonedDateTime dateTime;
     private String place;
     private int minStudentCount;
@@ -26,11 +26,11 @@ public class Meet {
     public String getCourse() { return course; }
     public void setCourse(String course) { this.course = course; }
 
-    public String getCompanyId() { return companyId; }
-    public void setCompanyId(String companyId) { this.companyId = companyId; }
+    public UUID getCompanyId() { return companyId; }
+    public void setCompanyId(UUID companyId) { this.companyId = companyId; }
 
-    public String getLecturerId() { return lecturerId; }
-    public void setLecturerId(String lecturerId) { this.lecturerId = lecturerId; }
+    public UUID getLecturerId() { return lecturerId; }
+    public void setLecturerId(UUID lecturerId) { this.lecturerId = lecturerId; }
 
     public ZonedDateTime getDateTime() { return dateTime; }
     public void setDateTime(ZonedDateTime dateTime) { this.dateTime = dateTime; }

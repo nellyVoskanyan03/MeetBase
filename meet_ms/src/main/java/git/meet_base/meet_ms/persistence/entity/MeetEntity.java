@@ -18,10 +18,10 @@ public class MeetEntity {
     private String course;
 
     @Column(name = "company_id")
-    private String companyId;
+    private UUID companyId;
 
     @Column(name = "lecturer_id")
-    private String lecturerId;
+    private UUID lecturerId;
 
     @Column(name = "date_time", nullable = false)
     private ZonedDateTime dateTime;
@@ -71,11 +71,11 @@ public class MeetEntity {
     public String getCourse() { return course; }
     public void setCourse(String course) { this.course = course; }
 
-    public String getCompanyId() { return companyId; }
-    public void setCompanyId(String companyId) { this.companyId = companyId; }
+    public UUID getCompanyId() { return companyId; }
+    public void setCompanyId(UUID companyId) { this.companyId = companyId; }
 
-    public String getLecturerId() { return lecturerId; }
-    public void setLecturerId(String lecturerId) { this.lecturerId = lecturerId; }
+    public UUID getLecturerId() { return lecturerId; }
+    public void setLecturerId(UUID lecturerId) { this.lecturerId = lecturerId; }
 
     public ZonedDateTime getDateTime() { return dateTime; }
     public void setDateTime(ZonedDateTime dateTime) { this.dateTime = dateTime; }

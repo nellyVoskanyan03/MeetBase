@@ -56,8 +56,8 @@ public class MeetService {
     public Page<Meet> getFilteredMeets(
             UserRole role,
             MeetStatus status,
-            String companyId,
-            String userId,
+            UUID companyId,
+            UUID userId,
             Pageable pageable
     ) {
         if (role != null && userId != null) {
@@ -84,7 +84,7 @@ public class MeetService {
         return Page.empty(pageable);
     }
 
-    public Meet respondToInvitation(UUID meetId, String lecturerId, Boolean accepted) {
+    public Meet respondToInvitation(UUID meetId, UUID lecturerId, Boolean accepted) {
         Meet meet = meetDomainRepository.findById(meetId)
                 .orElseThrow(() -> new ResourceNotFoundException("Meeting not found with ID: " + meetId));
 
@@ -123,7 +123,7 @@ public class MeetService {
         return savedMeet;
     }
 
-    public Meet registerStudent(UUID meetId, String studentId) {
+    public Meet registerStudent(UUID meetId, UUID studentId) {
         Meet meet = meetDomainRepository.findById(meetId)
                 .orElseThrow(() -> new ResourceNotFoundException("Meeting not found with ID: " + meetId));
 
@@ -295,7 +295,7 @@ public class MeetService {
             ));
         }
 
-        List<String> registeredStudentIds = meetDomainRegistrationRepository.findByMeetId(meet.getId())
+        List<UUID> registeredStudentIds = meetDomainRegistrationRepository.findByMeetId(meet.getId())
                 .stream()
                 .map(MeetRegistration::getStudentId)
                 .toList();

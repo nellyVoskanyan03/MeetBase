@@ -9,9 +9,10 @@ public interface MeetRegistrationRepository extends Repository<MeetRegistrationE
 
     MeetRegistrationEntity save(MeetRegistrationEntity entity);
 
-    List<MeetRegistrationEntity> findByStudentId(String studentId);
+    List<MeetRegistrationEntity> findByStudentId(UUID studentId);
 
     List<MeetRegistrationEntity> findByMeetId(UUID meetId);
 
-    boolean existsByMeetIdAndStudentId(UUID meetId, String studentId);
+    boolean existsByMeetIdAndStudentId(UUID meetId, UUID studentId);
+
 }

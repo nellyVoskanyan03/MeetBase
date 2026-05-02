@@ -6,11 +6,11 @@ import java.util.List;
 import java.util.UUID;
 
 public interface MeetDomainRegistrationRepository {
-    List<MeetRegistration> findByStudentId(String studentId);
+    List<MeetRegistration> findByStudentId(UUID studentId);
 
     MeetRegistration save(MeetRegistration registration);
 
-    boolean existsByMeetIdAndStudentId(UUID meetId, String studentId);
+    boolean existsByMeetIdAndStudentId(UUID meetId, UUID studentId);
 
     List<MeetRegistration> findByMeetId(UUID id);
 }

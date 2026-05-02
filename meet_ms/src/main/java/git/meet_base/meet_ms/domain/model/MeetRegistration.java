@@ -7,13 +7,13 @@ public class MeetRegistration {
 
     private UUID id;
     private UUID meetId;
-    private String studentId;
+    private UUID studentId;
     private ZonedDateTime registeredAt;
 
     public MeetRegistration() {
     }
 
-    public MeetRegistration(UUID id, UUID meetId, String studentId, ZonedDateTime registeredAt) {
+    public MeetRegistration(UUID id, UUID meetId, UUID studentId, ZonedDateTime registeredAt) {
         this.id = id;
         this.meetId = meetId;
         this.studentId = studentId;
@@ -37,11 +37,11 @@ public class MeetRegistration {
         this.meetId = meetId;
     }
 
-    public String getStudentId() {
+    public UUID getStudentId() {
         return studentId;
     }
 
-    public void setStudentId(String studentId) {
+    public void setStudentId(UUID studentId) {
         this.studentId = studentId;
     }
 

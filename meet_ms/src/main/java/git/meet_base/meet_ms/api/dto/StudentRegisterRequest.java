@@ -1,12 +1,14 @@
 package git.meet_base.meet_ms.api.dto;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+import java.util.UUID;
 
 public class StudentRegisterRequest {
 
-    @NotBlank(message = "Student ID is required")
-    private String studentId;
+    @NotNull(message = "Student ID is required")
+    private UUID studentId;
 
-    public String getStudentId() { return studentId; }
-    public void setStudentId(String studentId) { this.studentId = studentId; }
+    public UUID getStudentId() { return studentId; }
+    public void setStudentId(UUID studentId) { this.studentId = studentId; }
 }

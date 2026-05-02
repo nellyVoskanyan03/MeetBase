@@ -12,11 +12,11 @@ import java.util.UUID;
 public interface MeetDomainRepository {
     Meet save(Meet meet);
 
-    Page<Meet> findByIdInFiltered(List<UUID> meetIds, MeetStatus status, String companyId, Pageable pageable);
+    Page<Meet> findByIdInFiltered(List<UUID> meetIds, MeetStatus status, UUID companyId, Pageable pageable);
 
-    Page<Meet> findByLecturerIdFiltered(String lecturerId, MeetStatus status, String companyId, Pageable pageable);
+    Page<Meet> findByLecturerIdFiltered(UUID lecturerId, MeetStatus status, UUID companyId, Pageable pageable);
 
-    Page<Meet> findAllFiltered(MeetStatus status, String companyId, Pageable pageable);
+    Page<Meet> findAllFiltered(MeetStatus status, UUID companyId, Pageable pageable);
 
     Optional<Meet> findById(UUID meetId);
 }

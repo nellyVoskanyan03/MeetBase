@@ -6,6 +6,7 @@ import git.meet_base.meet_ms.domain.model.MeetStatus;
 import git.meet_base.meet_ms.domain.model.UpdateMeetCommand;
 import git.meet_base.meet_ms.domain.model.UserRole;
 import git.meet_base.meet_ms.domain.service.MeetService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +20,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/meets")
+@SecurityRequirement(name = "bearerAuth")
 public class MeetController {
     private final MeetService meetService;
 
@@ -41,8 +43,8 @@ public class MeetController {
     public ResponseEntity<Page<MeetResponse>> getMeets(
             @RequestParam() UserRole role,
             @RequestParam(required = false) MeetStatus status,
-            @RequestParam(required = false) String companyId,
-            @RequestParam() String userId,
+            @RequestParam(required = false) UUID companyId,
+            @RequestParam() UUID userId,
             Pageable pageable) {
 
 
