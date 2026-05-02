@@ -19,6 +19,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findById(UUID id);
 
+    Optional<User> findByEmail(String email);
+
     interface UserEmailProjection {
         UUID getId();
         String getEmail();

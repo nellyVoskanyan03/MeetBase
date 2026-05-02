@@ -1,14 +1,17 @@
 package git.meet_base.auth_ms.controller;
 
+import git.meet_base.auth_ms.dto.LoginRequest;
 import git.meet_base.auth_ms.dto.UserRegistrationRequest;
 import git.meet_base.auth_ms.dto.UserResponse;
 import git.meet_base.auth_ms.model.UserRole;
 import git.meet_base.auth_ms.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -41,5 +44,11 @@ public class UserController {
 
         List<UserResponse> users = userService.getUsers(role, isActive, companyId);
         return ResponseEntity.ok(users);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<Map<String, String>> login(@Valid @RequestBody LoginRequest request) {
+        Map<String, String> token = userService.login(request);
+        return ResponseEntity.ok(token);
     }
 }
