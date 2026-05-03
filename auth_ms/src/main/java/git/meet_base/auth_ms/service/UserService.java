@@ -8,10 +8,12 @@ import git.meet_base.auth_ms.exception.InvalidCredentialsException;
 import git.meet_base.auth_ms.model.User;
 import git.meet_base.auth_ms.model.UserRole;
 import git.meet_base.auth_ms.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collections;
@@ -56,7 +58,7 @@ public class UserService {
         User user = new User();
         user.setEmail(request.getEmail());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        user.setRole(request.getRole() );
+        user.setRole(request.getRole());
         user.setIsActive(true);
 
         user.setFirstName(request.getFirstName());
@@ -76,15 +78,13 @@ public class UserService {
         return new UserResponse(user);
     }
 
-        public List<UserResponse> getUsers(UserRole role, Boolean isActive, UUID companyId) {
-        List<User> users = userRepository.findUsersWithFilters(role, companyId, isActive);
+    public Page<UserResponse> getUsers(UserRole role, Boolean isActive, UUID companyId, Pageable pageable) {
+        Page<User> users = userRepository.findUsersWithFilters(role, companyId, isActive, pageable);
 
-        return users.stream()
-                .map(UserResponse::new)
-                .collect(Collectors.toList());
+        return users.map(UserResponse::new);
     }
 
-    public Map<String, String> login(LoginRequest request){
+    public Map<String, String> login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new InvalidCredentialsException("User not found"));
 

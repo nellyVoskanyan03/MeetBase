@@ -7,6 +7,10 @@ import git.meet_base.auth_ms.model.UserRole;
 import git.meet_base.auth_ms.service.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -40,12 +44,13 @@ public class UserController {
 
     @GetMapping
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<List<UserResponse>> getUsers(
+    public ResponseEntity<Page<UserResponse>> getUsers(
             @RequestParam(required = false) UserRole role,
             @RequestParam(required = false) Boolean isActive,
-            @RequestParam(required = false) UUID companyId) {
+            @RequestParam(required = false) UUID companyId,
+            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
 
-        List<UserResponse> users = userService.getUsers(role, isActive, companyId);
+        Page<UserResponse> users = userService.getUsers(role, isActive, companyId, pageable);
         return ResponseEntity.ok(users);
     }
 

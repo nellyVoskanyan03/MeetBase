@@ -3,6 +3,8 @@ package git.meet_base.auth_ms.repository;
 
 import git.meet_base.auth_ms.model.User;
 import git.meet_base.auth_ms.model.UserRole;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -33,9 +35,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "(:role IS NULL OR u.role = :role) AND " +
             "(:companyId IS NULL OR u.companyId = :companyId) AND " +
             "(:isActive IS NULL OR u.isActive = :isActive)")
-    List<User> findUsersWithFilters(
+    Page<User> findUsersWithFilters(
             @Param("role") UserRole role,
             @Param("companyId") UUID companyId,
-            @Param("isActive") Boolean isActive
+            @Param("isActive") Boolean isActive,
+            Pageable pageable
     );
 }
