@@ -87,6 +87,8 @@ services:
     environment:
       AUTH_MS_URL: http://auth-ms:8083
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      MAIL_USERNAME: voskanyannelli03@gmail.com
+      MAIL_PASSWORD:
     depends_on:
       - kafka
       - auth-ms
