@@ -21,11 +21,12 @@ public class JwtService {
     @Value("${application.security.jwt.expiration}")
     private long jwtExpiration;
 
-    public String generateToken(UUID userId, String role, String email) {
+    public String generateToken(UUID userId, String role, String email, UUID companyId) {
         return Jwts.builder()
                 .setClaims(Map.of(
                         "role", role,
-                        "email", email
+                        "email", email,
+                        "companyId", companyId
                 ))
                 .setSubject(userId.toString())
                 .setIssuedAt(new Date(System.currentTimeMillis()))

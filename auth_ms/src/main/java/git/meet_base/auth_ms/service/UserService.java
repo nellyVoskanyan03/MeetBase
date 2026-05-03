@@ -94,7 +94,8 @@ public class UserService {
         String token = jwtService.generateToken(
                 user.getId(),
                 user.getRole().name(),
-                user.getEmail()
+                user.getEmail(),
+                user.getCompanyId()
         );
         return Map.of("token", token);
     }
