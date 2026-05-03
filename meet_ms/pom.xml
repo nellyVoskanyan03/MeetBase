@@ -68,13 +68,38 @@
             <artifactId>google-auth-library-oauth2-http</artifactId>
             <version>1.23.0</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-flyway</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.google.apis</groupId>
             <artifactId>google-api-services-calendar</artifactId>
             <version>v3-rev20230825-2.0.0</version>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>dev</id>
+            <activation>
+                <activeByDefault>true</activeByDefault> </activation>
+            <properties>
+                <spring.profiles.active>dev</spring.profiles.active>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>stand</id>
+            <properties>
+                <spring.profiles.active>stand</spring.profiles.active>
+            </properties>
+        </profile>
+    </profiles>
 
     <build>
         <plugins>
