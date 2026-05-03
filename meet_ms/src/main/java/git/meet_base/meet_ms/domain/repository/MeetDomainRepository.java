@@ -16,6 +16,10 @@ public interface MeetDomainRepository {
 
     Page<Meet> findByLecturerIdFiltered(UUID lecturerId, MeetStatus status, UUID companyId, Pageable pageable);
 
+    Page<Meet> findForStudent(List<UUID> registeredIds, MeetStatus filterStatus, UUID filterCompanyId, Pageable pageable);
+
+    Page<Meet> findByManagerIdFiltered(UUID managerId, MeetStatus filterStatus, UUID companyId, Pageable pageable);
+
     Page<Meet> findAllFiltered(MeetStatus status, UUID companyId, Pageable pageable);
 
     Optional<Meet> findById(UUID meetId);

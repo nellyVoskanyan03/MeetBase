@@ -1,6 +1,7 @@
 package git.meet_base.meet_ms.api.controller;
 
 import git.meet_base.meet_ms.api.dto.ApiErrorResponse;
+import git.meet_base.meet_ms.domain.exception.ForbiddenAccessException;
 import git.meet_base.meet_ms.domain.exception.ResourceNotFoundException;
 import git.meet_base.meet_ms.domain.exception.UnauthorizedActionException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,6 +34,17 @@ public class GlobalExceptionHandler {
                 request.getRequestURI()
         );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(ForbiddenAccessException.class)
+    public ResponseEntity<ApiErrorResponse> handleForbiddenAccessException(ForbiddenAccessException ex, HttpServletRequest request) {
+        ApiErrorResponse error = new ApiErrorResponse(
+                HttpStatus.FORBIDDEN.value(),
+                HttpStatus.FORBIDDEN.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

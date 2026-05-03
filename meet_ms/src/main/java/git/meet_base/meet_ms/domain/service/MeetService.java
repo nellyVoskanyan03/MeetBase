@@ -60,28 +60,29 @@ public class MeetService {
             UUID userId,
             Pageable pageable
     ) {
-        if (role != null && userId != null) {
-            //Todo for later: role and id won't be needed when the JWT is added
-            switch (role) {
-                case STUDENT -> {
-                    List<MeetRegistration> registrations = meetDomainRegistrationRepository.findByStudentId(userId);
-                    List<UUID> meetIds = registrations.stream()
-                            .map(MeetRegistration::getMeetId)
-                            .toList();
+        switch (role) {
+            case STUDENT -> {
+                List<UUID> registeredMeetIds = meetDomainRegistrationRepository.findByStudentId(userId)
+                        .stream()
+                        .map(MeetRegistration::getMeetId)
+                        .toList();
 
-                    if (!meetIds.isEmpty()) {
-                        return meetDomainRepository.findByIdInFiltered(meetIds, status, companyId, pageable);
-                    }
+                if (registeredMeetIds.isEmpty()) {
+                    registeredMeetIds = List.of(UUID.randomUUID());
                 }
-                case LECTURER -> {
-                    return meetDomainRepository.findByLecturerIdFiltered(userId, status, companyId, pageable);
-                }
-                case MANAGER -> {
-                    return meetDomainRepository.findAllFiltered(status, companyId, pageable);
-                }
+
+                return meetDomainRepository.findForStudent(registeredMeetIds, status, companyId, pageable);
+            }
+            case LECTURER -> {
+                return meetDomainRepository.findByLecturerIdFiltered(userId, status, companyId, pageable);
+            }
+            case MANAGER -> {
+                return meetDomainRepository.findByManagerIdFiltered(userId, status, companyId, pageable);
+            }
+            default -> {
+                return Page.empty(pageable);
             }
         }
-        return Page.empty(pageable);
     }
 
     public Meet respondToInvitation(UUID meetId, UUID lecturerId, Boolean accepted) {

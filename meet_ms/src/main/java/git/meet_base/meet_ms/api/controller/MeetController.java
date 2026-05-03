@@ -1,11 +1,13 @@
 package git.meet_base.meet_ms.api.controller;
 
+import git.meet_base.meet_ms.api.annotation.AllowedRoles;
 import git.meet_base.meet_ms.api.dto.*;
 import git.meet_base.meet_ms.api.mapper.MeetMapper;
 import git.meet_base.meet_ms.domain.model.MeetStatus;
 import git.meet_base.meet_ms.domain.model.UpdateMeetCommand;
 import git.meet_base.meet_ms.domain.model.UserRole;
 import git.meet_base.meet_ms.domain.service.MeetService;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -29,6 +31,7 @@ public class MeetController {
     }
 
     @PostMapping
+    @AllowedRoles({UserRole.MANAGER})
     public ResponseEntity<MeetResponse> initializeMeeting(
             @Valid @RequestBody CreateMeetRequest createMeetDto) {
 
@@ -40,11 +43,12 @@ public class MeetController {
     }
 
     @GetMapping
+    @AllowedRoles({UserRole.MANAGER, UserRole.LECTURER, UserRole.STUDENT})
     public ResponseEntity<Page<MeetResponse>> getMeets(
-            @RequestParam() UserRole role,
+            @Parameter(hidden = true) @RequestHeader("X-User-Role") UserRole role,
+            @Parameter(hidden = true) @RequestHeader("X-User-Id") UUID userId,
+            @Parameter(hidden = true) @RequestHeader("X-User-CompanyId") UUID companyId,
             @RequestParam(required = false) MeetStatus status,
-            @RequestParam(required = false) UUID companyId,
-            @RequestParam() UUID userId,
             Pageable pageable) {
 
 
@@ -56,12 +60,14 @@ public class MeetController {
     }
 
     @PostMapping("/{id}/respond")
+    @AllowedRoles({UserRole.LECTURER})
     public ResponseEntity<LecturerRespondResponse> respondToInvitation(
             @PathVariable("id") UUID meetId,
+            @Parameter(hidden = true) @RequestHeader("X-User-Id") UUID lecturerId,
             @Valid @RequestBody LecturerRespondRequest request) {
 
         MeetResponse updatedMeet =
-                MeetMapper.toDto(meetService.respondToInvitation(meetId, request.getLecturerId(), request.getAccepted()));
+                MeetMapper.toDto(meetService.respondToInvitation(meetId, lecturerId, request.getAccepted()));
 
 
         LecturerRespondResponse response = new LecturerRespondResponse(
@@ -74,12 +80,13 @@ public class MeetController {
     }
 
     @PostMapping("/{id}/register")
+    @AllowedRoles({UserRole.STUDENT})
     public ResponseEntity<StudentRegisterResponse> registerForMeet(
             @PathVariable("id") UUID meetId,
-            @Valid @RequestBody StudentRegisterRequest request) {
+            @Parameter(hidden = true) @RequestHeader("X-User-Id") UUID studentId) {
 
         MeetResponse updatedMeet =
-                MeetMapper.toDto(meetService.registerStudent(meetId, request.getStudentId()));
+                MeetMapper.toDto(meetService.registerStudent(meetId, studentId));
 
         StudentRegisterResponse response = new StudentRegisterResponse(
                 "Successfully registered for the meeting.",
@@ -92,6 +99,7 @@ public class MeetController {
     }
 
     @PostMapping("/{id}/approve")
+    @AllowedRoles({UserRole.MANAGER})
     public ResponseEntity<ApproveMeetResponse> approveMeeting(@PathVariable("id") UUID meetId) {
 
         MeetResponse approvedMeet = MeetMapper.toDto(meetService.approveMeeting(meetId));
@@ -108,6 +116,7 @@ public class MeetController {
     }
 
     @PatchMapping("/{id}")
+    @AllowedRoles({UserRole.MANAGER, UserRole.LECTURER})
     public ResponseEntity<UpdateMeetResponse> updateMeeting(
             @PathVariable("id") UUID meetId,
             @RequestBody UpdateMeetRequest request) {
@@ -139,6 +148,7 @@ public class MeetController {
     }
 
     @DeleteMapping("/{id}")
+    @AllowedRoles({UserRole.MANAGER})
     public ResponseEntity<CancelMeetResponse> cancelMeeting(@PathVariable("id") UUID meetId) {
 
         MeetResponse cancelledMeet =

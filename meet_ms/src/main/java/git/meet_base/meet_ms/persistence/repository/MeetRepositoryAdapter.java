@@ -31,9 +31,22 @@ public class MeetRepositoryAdapter implements MeetDomainRepository {
 
         return MeetMapper.toDomain(savedEntity);
     }
+
     @Override
     public Page<Meet> findByLecturerIdFiltered(UUID lecturerId, MeetStatus status, UUID companyId, Pageable pageable) {
         return meetRepository.findByLecturerIdDynamic(lecturerId, status, companyId, pageable)
+                .map(MeetMapper::toDomain);
+    }
+
+    @Override
+    public Page<Meet> findForStudent(List<UUID> registeredIds, MeetStatus filterStatus, UUID filterCompanyId, Pageable pageable) {
+        return meetRepository.findForStudent(registeredIds, filterCompanyId, filterStatus, pageable)
+                .map(MeetMapper::toDomain);
+    }
+
+    @Override
+    public Page<Meet> findByManagerIdFiltered(UUID managerId, MeetStatus filterStatus, UUID companyId, Pageable pageable) {
+        return meetRepository.findByManagerIdFiltered(managerId, filterStatus, companyId, pageable)
                 .map(MeetMapper::toDomain);
     }
 
