@@ -52,6 +52,7 @@ public class MeetEventConsumer {
                 for (String email : targetEmails) {
                     System.out.println("Sending email to: " + email);
                     emailService.sendEmail(email, subject, payload.getMessage());
+                    acknowledgment.acknowledge();
                 }
             } else {
                 System.out.println("No users found to notify for this event.");
@@ -60,8 +61,5 @@ public class MeetEventConsumer {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println("kk");
-        //TODO: send acknowledgment to kafka(if there is an authid_ms do it there)
-        //acknowledgment.acknowledge();
     }
 }

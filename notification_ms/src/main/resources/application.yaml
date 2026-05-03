@@ -9,7 +9,10 @@ spring:
 
   kafka:
     bootstrap-servers: localhost:9092
+    listener:
+      ack-mode: manual_immediate
     consumer:
+      enable-auto-commit: false
       group-id: notification-group
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
