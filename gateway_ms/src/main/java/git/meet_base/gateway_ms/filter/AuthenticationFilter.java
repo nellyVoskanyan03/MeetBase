@@ -52,17 +52,17 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                 jwtUtil.validateToken(authHeader);
 
                 Claims claims = jwtUtil.extractAllClaims(authHeader);
-                exchange.getRequest().mutate()
+                ServerHttpRequest modifiedRequest = request.mutate()
                         .header("X-User-Id", claims.getSubject())
                         .header("X-User-Role", claims.get("role", String.class))
+                        .header("X-User-CompanyId", claims.get("companyId", String.class))
                         .build();
-
+                return chain.filter(exchange.mutate().request(modifiedRequest).build());
             } catch (Exception e) {
                 exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
                 return exchange.getResponse().setComplete();
             }
 
-            return chain.filter(exchange);
         };
     }
 }
