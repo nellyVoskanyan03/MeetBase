@@ -1,63 +1,44 @@
 server:
   port: 8000
+
 application:
   security:
     jwt:
-      # THIS MUST MATCH AUTH_MS EXACTLY!
-      secret-key: 
+      secret-key: ${JWT_SECRET_KEY}
+
 spring:
   application:
-    name: gateway_ms
+    name: gateway-service
   cloud:
     gateway:
-      globalcors:
-        add-to-simple-url-handler-mapping: true
-        cors-configurations:
-          '[/**]':
-            allowedOriginPatterns: "*"
-            allowedMethods:
-              - GET
-              - POST
-              - PUT
-              - DELETE
-              - OPTIONS
-            allowedHeaders:
-              - "Content-Type"
-              - "Authorization"
-            allowCredentials: false
-            maxAge: 3600
-
       routes:
-        # --- API Routes ---
         - id: auth-service
-          uri: http://auth-ms:8083
+          uri: ${AUTH_MS_URL:http://auth-ms:8083}
           predicates:
             - Path=/api/v1/users/**, /users/**
           filters:
             - AuthenticationFilter
 
         - id: meet-service
-          uri: http://meet-ms:8080
+          uri: ${MEET_MS_URL:http://meet-ms:8080}
           predicates:
             - Path=/meets/**
           filters:
             - AuthenticationFilter
 
-        # --- Swagger Doc Routes ---
         - id: auth-service-docs
-          uri: http://auth-ms:8083
+          uri: ${AUTH_MS_URL:http://auth-ms:8083}
           predicates:
             - Path=/v3/api-docs/auth
           filters:
             - RewritePath=/v3/api-docs/auth, /v3/api-docs
 
         - id: meet-service-docs
-          uri: http://meet-ms:8080
+          uri: ${MEET_MS_URL:http://meet-ms:8080}
           predicates:
             - Path=/v3/api-docs/meet
           filters:
             - RewritePath=/v3/api-docs/meet, /v3/api-docs
-
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
