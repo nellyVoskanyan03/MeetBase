@@ -17,7 +17,6 @@ podman save -o notification-ms.tar notification-ms:latest
 podman save -o gateway-ms.tar gateway-ms:latest
 
 echo "📥 Loading TARs into Minikube..."
-# Fixed: added --overwrite=true to avoid silent failures on re-deploy
 minikube image load --overwrite=true auth-ms.tar
 minikube image load --overwrite=true meet-ms.tar
 minikube image load --overwrite=true notification-ms.tar
@@ -29,22 +28,48 @@ rm *-ms.tar
 echo "🔐 Applying ConfigMaps and Secrets..."
 kubectl apply -f config.yaml
 
-echo "🗄️ Applying Databases and Kafka Broker..."
+echo "🗄️ Applying Databases..."
 kubectl apply -f postgres.yaml
-kubectl apply -f kafka.yaml
 
-echo "⏳ Waiting for databases to be ready before starting Spring Boot apps..."
+echo "☕ Applying Kafka..."
+kubectl apply -f kafka/00-namespace.yaml
+kubectl apply -f kafka/01-configmap.yaml
+kubectl apply -f kafka/02-headless-service.yaml
+kubectl apply -f kafka/03-service.yaml
+kubectl apply -f kafka/04-statefulset.yaml
+
+echo "🖥️ Applying Kafka UI..."
+kubectl apply -f kafka-ui.yaml
+
+echo "⏳ Waiting for databases to be ready..."
 kubectl wait --for=condition=ready pod -l app=postgres --timeout=120s
 kubectl wait --for=condition=ready pod -l app=auth-postgres --timeout=120s
-kubectl wait --for=condition=ready pod -l app=kafka --timeout=120s
+
+echo "⏳ Waiting for Kafka to be ready..."
+kubectl wait --for=condition=ready pod -l app=kafka -n kafka --timeout=180s
+
+echo "📋 Pre-creating Kafka internal and application topics..."
+kubectl exec -n kafka kafka-0 -- \
+  /opt/kafka/bin/kafka-topics.sh \
+  --bootstrap-server kafka.kafka.svc.cluster.local:9092 \
+  --create --topic __consumer_offsets \
+  --partitions 50 --replication-factor 1 \
+  --config cleanup.policy=compact \
+  --if-not-exists
+
+kubectl exec -n kafka kafka-0 -- \
+  /opt/kafka/bin/kafka-topics.sh \
+  --bootstrap-server kafka.kafka.svc.cluster.local:9092 \
+  --create --topic meet-notifications-topic \
+  --partitions 1 --replication-factor 1 \
+  --if-not-exists
 
 echo "🚀 Applying Spring Boot Microservices..."
 kubectl apply -f auth-ms.yaml
 kubectl apply -f meet-ms.yaml
 kubectl apply -f notification-ms.yaml
 
-# Fixed: wait for microservices to be ready before starting the gateway
-echo "⏳ Waiting for microservices to be ready before starting gateway..."
+echo "⏳ Waiting for microservices to be ready..."
 kubectl wait --for=condition=ready pod -l app=auth-ms --timeout=180s
 kubectl wait --for=condition=ready pod -l app=meet-ms --timeout=180s
 kubectl wait --for=condition=ready pod -l app=notification-ms --timeout=180s
@@ -55,7 +80,10 @@ kubectl apply -f gateway-ms.yaml
 echo "⏳ Waiting for Gateway to be ready..."
 kubectl wait --for=condition=ready pod -l app=gateway-ms --timeout=120s
 
-echo "✅ Deployment Complete! Here is your cluster status:"
+echo "✅ Deployment Complete!"
 kubectl get pods,svc
+kubectl get pods,svc -n kafka
 
-echo "🌐 Run 'minikube service gateway-ms-service' to open the app in your browser!"
+echo ""
+echo "🌐 Gateway:  $(minikube service gateway-ms-service --url)"
+echo "📊 Kafka UI: $(minikube service kafka-ui --url)"

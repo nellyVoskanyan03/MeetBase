@@ -38,4 +38,4 @@ spec:
     - protocol: TCP
       port: 8000
       targetPort: 8000
-      nodePort: 30000  # Port accessible from web browser (localhost:30000)
+      nodePort: 30083  # Port accessible from web browser (localhost:30000)

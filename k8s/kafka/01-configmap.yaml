@@ -1,0 +1,26 @@
+# 01-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kafka-config
+  namespace: kafka
+data:
+  server.properties.template: |
+    process.roles=broker,controller
+    node.id=0
+    controller.quorum.voters=0@kafka-0.kafka-headless.kafka.svc.cluster.local:9093
+
+    listeners=PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+    advertised.listeners=PLAINTEXT://kafka.kafka.svc.cluster.local:9092
+    listener.security.protocol.map=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+    inter.broker.listener.name=PLAINTEXT
+    controller.listener.names=CONTROLLER
+
+    log.dirs=/var/lib/kafka/data
+
+    num.partitions=1
+    default.replication.factor=1
+    min.insync.replicas=1
+    auto.create.topics.enable=true
+    log.retention.hours=168
+    log.segment.bytes=1073741824

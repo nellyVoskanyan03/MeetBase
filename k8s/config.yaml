@@ -1,12 +1,11 @@
----
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: meetbase-config
 data:
   SPRING_PROFILES_ACTIVE: "stand"
-  KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"          # Fixed: was "kafka-service:9092"
-  AUTH_MS_URL: "http://auth-ms:8083"             # Fixed: was "http://auth-ms-service:8083"
+  KAFKA_BOOTSTRAP_SERVERS: "kafka.kafka.svc.cluster.local:9092"
+  AUTH_MS_URL: "http://auth-ms:8083"
   MEET_MS_URL: "http://meet-ms-service:8080"
   DB_USERNAME: "postgres"
 
@@ -17,7 +16,7 @@ metadata:
   name: meetbase-secrets
 type: Opaque
 stringData:
-  DB_PASSWORD: ""
-  APPLICATION_SECURITY_JWT_SECRET_KEY: ""
-  MAIL_USERNAME: ""
-  MAIL_PASSWORD: ""
+  DB_PASSWORD: "root"
+  APPLICATION_SECURITY_JWT_SECRET_KEY: "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970"
+  MAIL_USERNAME: "voskanyannelli03@gmail.com"
+  MAIL_PASSWORD: "ddwckexjvrzgusvl"
