@@ -1,0 +1,41 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway-ms-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gateway-ms
+  template:
+    metadata:
+      labels:
+        app: gateway-ms
+    spec:
+      containers:
+        - name: gateway-ms
+          image: localhost/gateway-ms:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: meetbase-config
+            - secretRef:
+                name: meetbase-secrets
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway-ms-service
+spec:
+  type: NodePort
+  selector:
+    app: gateway-ms
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
+      nodePort: 30000  # Port accessible from web browser (localhost:30000)

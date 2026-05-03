@@ -1,0 +1,41 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-ms-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth-ms
+  template:
+    metadata:
+      labels:
+        app: auth-ms
+    spec:
+      containers:
+        - name: auth-ms
+          image: localhost/auth-ms:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8083
+          env:
+            - name: DB_URL
+              value: "jdbc:postgresql://auth-postgres:5432/auth_db"  # Fixed: was missing entirely
+          envFrom:
+            - configMapRef:
+                name: meetbase-config
+            - secretRef:
+                name: meetbase-secrets
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-ms  # Matches AUTH_MS_URL: http://auth-ms:8083
+spec:
+  selector:
+    app: auth-ms
+  ports:
+    - protocol: TCP
+      port: 8083
+      targetPort: 8083

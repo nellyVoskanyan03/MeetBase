@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-ms-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notification-ms
+  template:
+    metadata:
+      labels:
+        app: notification-ms
+    spec:
+      containers:
+        - name: notification-ms
+          image: localhost/notification-ms:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8082
+          envFrom:
+            - configMapRef:
+                name: meetbase-config
+            - secretRef:
+                name: meetbase-secrets
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-ms
+spec:
+  selector:
+    app: notification-ms
+  ports:
+    - protocol: TCP
+      port: 8082
+      targetPort: 8082

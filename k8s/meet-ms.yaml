@@ -1,0 +1,42 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: meet-ms-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: meet-ms
+  template:
+    metadata:
+      labels:
+        app: meet-ms
+    spec:
+      containers:
+        - name: meet-ms
+          image: localhost/meet-ms:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DB_URL
+              value: "jdbc:postgresql://postgres:5432/meet_db"  # Fixed: was "postgres-meet-service"
+          envFrom:
+            - configMapRef:
+                name: meetbase-config
+            - secretRef:
+                name: meetbase-secrets
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: meet-ms-service  # Matches MEET_MS_URL: http://meet-ms-service:8080
+spec:
+  selector:
+    app: meet-ms
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
