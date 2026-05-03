@@ -111,6 +111,10 @@ services:
     container_name: gateway_ms_app
     ports:
       - "8000:8000" # Expose the "Front Door" to your computer
+    environment:
+      APPLICATION_SECURITY_JWT_SECRET_KEY:
+      AUTH_MS_URL: http://auth-ms:8083
+      MEET_MS_URL: http://meet-ms:8080
     depends_on:
       - auth-ms
       - meet-ms
