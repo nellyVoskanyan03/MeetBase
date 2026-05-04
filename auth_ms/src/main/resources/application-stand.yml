@@ -1,5 +1,16 @@
 server:
   port: 8083
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      base-path: "/"
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always
 
 application:
   security:
@@ -8,6 +19,8 @@ application:
       expiration: 86400000
 
 spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
   application:
     name: auth-service
   flyway:

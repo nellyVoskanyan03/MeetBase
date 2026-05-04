@@ -1,12 +1,24 @@
 server:
   port: 8000
+  shutdown: graceful
 
+management:
+  endpoints:
+    web:
+      base-path: "/"
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always
 application:
   security:
     jwt:
       secret-key: ${JWT_SECRET_KEY}
 
 spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
   application:
     name: gateway-service
   cloud:

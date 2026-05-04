@@ -19,6 +19,20 @@ spec:
           imagePullPolicy: Never
           ports:
             - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 120
+            periodSeconds: 5
+            failureThreshold: 3
+
+          livenessProbe:
+            httpGet:
+                path: /health
+                port: 8080
+            initialDelaySeconds: 120
+            periodSeconds: 10
           env:
             - name: DB_URL
               value: "jdbc:postgresql://postgres:5432/meet_db"  # Fixed: was "postgres-meet-service"

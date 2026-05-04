@@ -1,9 +1,21 @@
 server:
   port: 8082
+  shutdown: graceful
 
 AUTH_MS_URL: ${AUTH_MS_URL}
 
+management:
+  endpoints:
+    web:
+      base-path: "/"
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always
 spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
   application:
     name: notification-service
 
