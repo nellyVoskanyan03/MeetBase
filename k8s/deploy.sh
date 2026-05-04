@@ -1,8 +1,12 @@
 #!/bin/bash
+# Exit immediately if a command exits with a non-zero status
 set -e
 
 echo "🚀 Starting Minikube with Podman..."
 minikube start --driver=podman
+
+echo "🌍 Enabling Minikube Ingress Addon..."
+minikube addons enable ingress
 
 echo "🏗️ Building Microservice Images (from parent directory)..."
 podman build -t auth-ms:latest ../auth_ms
@@ -78,12 +82,26 @@ echo "🚪 Applying API Gateway..."
 kubectl apply -f gateway-ms.yaml
 
 echo "⏳ Waiting for Gateway to be ready..."
-kubectl wait --for=condition=ready pod -l app=gateway-ms --timeout=120s
+kubectl wait --for=condition=ready pod -l app=gateway-ms --timeout=180s
+
+echo "🚦 Applying Ingress Rules..."
+kubectl apply -f ingress.yaml
 
 echo "✅ Deployment Complete!"
 kubectl get pods,svc
 kubectl get pods,svc -n kafka
 
 echo ""
-echo "🌐 Gateway:  $(minikube service gateway-ms-service --url)"
+echo "======================================================"
+echo "🎯 ACCESS POINTS:"
+echo "======================================================"
 echo "📊 Kafka UI: $(minikube service kafka-ui --url)"
+echo "🌐 Gateway (Direct): $(minikube service gateway-ms-service --url)"
+echo ""
+echo "🌍 INGRESS ACCESS (Mac/Podman Workaround):"
+echo "1. Ensure /etc/hosts has: 127.0.0.1 api.meetbase.local"
+echo "2. Run this command in a new terminal tab:"
+echo "   kubectl port-forward --namespace=ingress-nginx service/ingress-nginx-controller 8080:80"
+echo "3. Open your browser to:"
+echo "   http://api.meetbase.local:8080/swagger-ui.html"
+echo "======================================================"

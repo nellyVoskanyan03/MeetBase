@@ -1,0 +1,20 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: meetbase-ingress
+  annotations:
+    # This tells Kubernetes we are using the NGINX ingress controller
+    kubernetes.io/ingress.class: nginx
+spec:
+  rules:
+    - host: api.meetbase.local # Your custom domain name
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gateway-ms-service
+                port:
+                  number: 8000
