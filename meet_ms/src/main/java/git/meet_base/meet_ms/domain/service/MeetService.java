@@ -10,6 +10,8 @@ import git.meet_base.meet_ms.domain.repository.MeetDomainRegistrationRepository;
 import git.meet_base.meet_ms.domain.repository.MeetDomainRepository;
 import git.meet_base.meet_ms.infrastructure.CalendarEventResult;
 import git.meet_base.meet_ms.infrastructure.GoogleCalendarClient;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -26,12 +28,14 @@ public class MeetService {
     private final MeetDomainRegistrationRepository meetDomainRegistrationRepository;
     private final MeetEventProducer meetEventProducer;
     private final GoogleCalendarClient googleCalendarClient;
+    private final Counter meetingsCreatedCounter;
 
-    public MeetService(MeetDomainRepository meetDomainRepository, MeetDomainRegistrationRepository meetDomainRegistrationRepository, MeetEventProducer meetEventProducer, GoogleCalendarClient googleCalendarClient) {
+    public MeetService(MeetDomainRepository meetDomainRepository, MeetDomainRegistrationRepository meetDomainRegistrationRepository, MeetEventProducer meetEventProducer, GoogleCalendarClient googleCalendarClient, MeterRegistry meterRegistry) {
         this.meetDomainRepository = meetDomainRepository;
         this.meetDomainRegistrationRepository = meetDomainRegistrationRepository;
         this.meetEventProducer = meetEventProducer;
         this.googleCalendarClient = googleCalendarClient;
+        this.meetingsCreatedCounter = meterRegistry.counter("business.meet.created");
     }
 
     public Meet initializeMeeting(Meet meet) {
@@ -39,6 +43,8 @@ public class MeetService {
         meet.setActualParticipants(0);
 
         Meet savedMeet = meetDomainRepository.save(meet);
+
+        meetingsCreatedCounter.increment();
 
         MeetNotificationEvent event = new MeetNotificationEvent(
                 savedMeet.getId(),
