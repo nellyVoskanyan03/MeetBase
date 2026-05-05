@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s # How often to fetch the data
+    
+    scrape_configs:
+      # This is the job that will scrape your Meet microservice
+      - job_name: 'meet-ms'
+        metrics_path: '/prometheus'
+        static_configs:
+          # This uses your Kubernetes internal DNS to find the service!
+          - targets: ['meet-ms-service:8080'] 
+    
+      # You can easily add your other services here too!
+      # - job_name: 'auth-ms'
+      #   metrics_path: '/prometheus'
+      #   static_configs:
+      #     - targets: ['auth-ms-service:8080']

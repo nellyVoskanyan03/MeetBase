@@ -84,6 +84,15 @@ kubectl apply -f gateway-ms.yaml
 echo "⏳ Waiting for Gateway to be ready..."
 kubectl wait --for=condition=ready pod -l app=gateway-ms --timeout=180s
 
+echo "📈 Applying Observability (Prometheus & Grafana)..."
+kubectl apply -f prometheus-config.yaml
+kubectl apply -f prometheus.yaml
+kubectl apply -f grafana.yaml
+
+echo "⏳ Waiting for Observability stack to be ready..."
+kubectl wait --for=condition=ready pod -l app=prometheus --timeout=120s
+kubectl wait --for=condition=ready pod -l app=grafana --timeout=120s
+
 echo "🚦 Applying Ingress Rules..."
 kubectl apply -f ingress.yaml
 
@@ -93,15 +102,24 @@ kubectl get pods,svc -n kafka
 
 echo ""
 echo "======================================================"
-echo "🎯 ACCESS POINTS:"
+echo "🎯 ARCHITECTURE DASHBOARDS (Mac/Podman Port-Forwards):"
 echo "======================================================"
-echo "📊 Kafka UI: $(minikube service kafka-ui --url)"
-echo "🌐 Gateway (Direct): $(minikube service gateway-ms-service --url)"
+echo "To view your UIs, run these commands in separate terminal tabs:"
 echo ""
-echo "🌍 INGRESS ACCESS (Mac/Podman Workaround):"
-echo "1. Ensure /etc/hosts has: 127.0.0.1 api.meetbase.local"
-echo "2. Run this command in a new terminal tab:"
+echo "1. 🌍 MAIN APP (API Gateway via Ingress):"
+echo "   Ensure /etc/hosts has: 127.0.0.1 api.meetbase.local"
 echo "   kubectl port-forward --namespace=ingress-nginx service/ingress-nginx-controller 8080:80"
-echo "3. Open your browser to:"
-echo "   http://api.meetbase.local:8080/swagger-ui.html"
+echo "   👉 http://api.meetbase.local:8080/swagger-ui.html"
+echo ""
+echo "2. 📊 GRAFANA (Metrics UI):"
+echo "   kubectl port-forward svc/grafana-service 3000:3000"
+echo "   👉 http://localhost:3000  (admin / admin)"
+echo ""
+echo "3. ⚙️ PROMETHEUS (Metrics DB):"
+echo "   kubectl port-forward svc/prometheus-service 9090:9090"
+echo "   👉 http://localhost:9090"
+echo ""
+echo "4. 🖥️ KAFKA UI (Event Streams):"
+echo "   kubectl port-forward svc/kafka-ui 8081:8080"
+echo "   👉 http://localhost:8081"
 echo "======================================================"
