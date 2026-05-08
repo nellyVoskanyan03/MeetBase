@@ -28,14 +28,20 @@ public class MeetService {
     private final MeetDomainRegistrationRepository meetDomainRegistrationRepository;
     private final MeetEventProducer meetEventProducer;
     private final GoogleCalendarClient googleCalendarClient;
+
     private final Counter meetingsCreatedCounter;
+    private final Counter failedApprovalCounter;
+    private final Counter failedCancelCounter;
 
     public MeetService(MeetDomainRepository meetDomainRepository, MeetDomainRegistrationRepository meetDomainRegistrationRepository, MeetEventProducer meetEventProducer, GoogleCalendarClient googleCalendarClient, MeterRegistry meterRegistry) {
         this.meetDomainRepository = meetDomainRepository;
         this.meetDomainRegistrationRepository = meetDomainRegistrationRepository;
         this.meetEventProducer = meetEventProducer;
         this.googleCalendarClient = googleCalendarClient;
+
         this.meetingsCreatedCounter = meterRegistry.counter("business.meet.created");
+        this.failedApprovalCounter = meterRegistry.counter("business.failed.meet.approved");
+        this.failedCancelCounter = meterRegistry.counter("business.failed.meet.cancel");
     }
 
     public Meet initializeMeeting(Meet meet) {
@@ -183,7 +189,6 @@ public class MeetService {
 
         meet.setStatus(MeetStatus.APPROVED);
 
-
         try {
             //Todo: get the duration of the class from the request body
             CalendarEventResult googleResult = googleCalendarClient.createMeetingWithHangoutLink(
@@ -197,11 +202,23 @@ public class MeetService {
             meet.setHangoutLink(googleResult.getMeetLink());
 
         } catch (Exception e) {
+            failedApprovalCounter.increment();
             throw new RuntimeException("Google Calendar integration failed. Meeting not approved.", e);
         }
+        Meet savedMeet;
+        try {
+            savedMeet = meetDomainRepository.save(meet);
+        } catch (java.lang.Exception e) {
+            try {
+                googleCalendarClient.deleteMeetingEvent(meet.getGoogleCalendarEventId());
+            } catch (Exception ex) {
+                failedCancelCounter.increment();
+                System.err.println("Note: Could not delete Google Event: " + ex.getMessage());
+            }
+            failedApprovalCounter.increment();
+            throw new RuntimeException("Meet status update failed. Meeting not approved.", e);
 
-        Meet savedMeet = meetDomainRepository.save(meet);
-
+        }
         notifyAllParticipants(
                 savedMeet,
                 MeetActionType.MEET_APPROVED,
@@ -270,6 +287,7 @@ public class MeetService {
                 try {
                     googleCalendarClient.deleteMeetingEvent(meet.getGoogleCalendarEventId());
                 } catch (Exception e) {
+                    failedCancelCounter.increment();
                     System.err.println("Note: Could not delete Google Event: " + e.getMessage());
                 }
             }
@@ -313,5 +331,4 @@ public class MeetService {
             ));
         }
     }
-
 }

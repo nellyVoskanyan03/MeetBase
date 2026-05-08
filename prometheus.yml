@@ -1,0 +1,15 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  # 1. Existing Meet Service Job
+  - job_name: 'meet-ms'
+    metrics_path: '/prometheus' # Or '/actuator/prometheus' depending on your properties
+    static_configs:
+      - targets: ['meet-ms:8080']
+
+  # 2. NEW Notification Service Job
+  - job_name: 'notification-ms'
+    metrics_path: '/prometheus' # Or '/actuator/prometheus'
+    static_configs:
+      - targets: ['notification-ms:8082']

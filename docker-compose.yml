@@ -79,6 +79,7 @@ services:
     depends_on:
       - postgres
       - kafka
+
   notification-ms:
     build: ./notification_ms
     container_name: notification_ms_app
@@ -88,17 +89,18 @@ services:
       AUTH_MS_URL: http://auth-ms:8083
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       MAIL_USERNAME: voskanyannelli03@gmail.com
-      MAIL_PASSWORD:
+      MAIL_PASSWORD: ddwckexjvrzgusvl
     depends_on:
       - kafka
       - auth-ms
+
   auth-ms:
     build: ./auth_ms
     container_name: auth_ms_app
     ports:
       - "8083:8083"
     environment:
-      APPLICATION_SECURITY_JWT_SECRET_KEY:
+      APPLICATION_SECURITY_JWT_SECRET_KEY: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       SPRING_DATASOURCE_URL: jdbc:postgresql://auth-postgres:5432/auth_db
       SPRING_DATASOURCE_USERNAME: postgres
@@ -106,18 +108,45 @@ services:
     depends_on:
       - auth-postgres
       - kafka
+
   gateway-ms:
     build: ./gateway_ms
     container_name: gateway_ms_app
     ports:
       - "8000:8000" # Expose the "Front Door" to your computer
     environment:
-      APPLICATION_SECURITY_JWT_SECRET_KEY:
+      APPLICATION_SECURITY_JWT_SECRET_KEY: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
       AUTH_MS_URL: http://auth-ms:8083
       MEET_MS_URL: http://meet-ms:8080
     depends_on:
       - auth-ms
       - meet-ms
+
+  # ==========================================
+  # OBSERVABILITY STACK
+  # ==========================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml # Mounts the local file
+    depends_on:
+      - meet-ms
+      - notification-ms
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
+
 volumes:
   postgres_data:
     driver: local

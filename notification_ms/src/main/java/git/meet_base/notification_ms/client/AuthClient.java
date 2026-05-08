@@ -2,9 +2,11 @@ package git.meet_base.notification_ms.client;
 
 import git.meet_base.notification_ms.dto.AuthUserDto;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.web.PagedModel;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -20,7 +22,7 @@ public class AuthClient {
     }
 
     public List<String> getActiveManagerEmails(UUID companyId) {
-        List<AuthUserDto> users = authRestClient.get()
+        PagedModel<AuthUserDto> page = authRestClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/api/v1/users")
                         .queryParam("role", "MANAGER")
@@ -31,7 +33,8 @@ public class AuthClient {
                 .body(new ParameterizedTypeReference<>() {
                 });
 
-        if (users == null) return List.of();
+
+        List<AuthUserDto> users = page != null ? page.getContent() : Collections.emptyList();
 
         return users.stream()
                 .map(AuthUserDto::getEmail)
